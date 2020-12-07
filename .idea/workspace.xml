@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="13244449-f037-4da3-84e4-44f8a32acde6" name="Default Changelist" comment="" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ElmWorkspace">
+    <elmProjects>
+      <project path="$PROJECT_DIR$/elm.json" />
+    </elmProjects>
+    <settings elmCompilerPath="/usr/local/bin/elm" elmFormatPath="/usr/local/bin/elm-format" elmTestPath="null" isElmFormatOnSaveEnabled="true" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="JavaScript File" />
+        <option value="Elm Module" />
+      </list>
+    </option>
+  </component>
+  <component name="ProjectId" id="1l9p4YObHKvOUzKmwxceKd3W6Yc" />
+  <component name="ProjectViewState">
+    <option name="autoscrollFromSource" value="true" />
+    <option name="autoscrollToSource" value="true" />
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="node.js.detected.package.eslint" value="true" />
+    <property name="node.js.path.for.package.eslint" value="project" />
+    <property name="node.js.selected.package.eslint" value="(autodetect)" />
+    <property name="nodejs_package_manager_path" value="npm" />
+    <property name="org.elm.workspace.PROJECT_DISCOVERY" value="true" />
+    <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
+  </component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/UI" />
+    </key>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="13244449-f037-4da3-84e4-44f8a32acde6" name="Default Changelist" comment="" />
+      <created>1607018970486</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1607018970486</updated>
+      <workItem from="1607018971555" duration="13107000" />
+      <workItem from="1607174583180" duration="37273000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="371" y="164" key="SettingsEditor" timestamp="1607174568709">
+      <screen x="0" y="0" width="1680" height="1050" />
+    </state>
+    <state x="371" y="164" key="SettingsEditor/-123.-1057.1920.1057/0.0.1680.1050@0.0.1680.1050" timestamp="1607174568709" />
+    <state x="371" y="164" key="SettingsEditor/-123.-1080.1920.1080/0.0.1680.1050@0.0.1680.1050" timestamp="1607022967192" />
+    <state width="500" height="445" key="SwitcherDM" timestamp="1607287752715">
+      <screen x="0" y="0" width="1680" height="1050" />
+    </state>
+    <state width="500" height="445" key="SwitcherDM/-123.-1080.1920.1080/0.0.1680.1050@0.0.1680.1050" timestamp="1607185483993" />
+    <state width="500" height="445" key="SwitcherDM/0.0.1680.1050@0.0.1680.1050" timestamp="1607287752715" />
+    <state x="433" y="142" key="com.intellij.openapi.editor.actions.MultiplePasteAction$ClipboardContentChooser" timestamp="1607278845776">
+      <screen x="0" y="0" width="1680" height="1050" />
+    </state>
+    <state x="433" y="142" key="com.intellij.openapi.editor.actions.MultiplePasteAction$ClipboardContentChooser/-123.-1080.1920.1080/0.0.1680.1050@0.0.1680.1050" timestamp="1607205390201" />
+    <state x="433" y="142" key="com.intellij.openapi.editor.actions.MultiplePasteAction$ClipboardContentChooser/0.0.1680.1050@0.0.1680.1050" timestamp="1607278845776" />
+    <state x="505" y="233" width="670" height="676" key="search.everywhere.popup" timestamp="1607077805481">
+      <screen x="0" y="0" width="1680" height="1050" />
+    </state>
+    <state x="505" y="233" width="670" height="676" key="search.everywhere.popup/-123.-1080.1920.1080/0.0.1680.1050@0.0.1680.1050" timestamp="1607077805481" />
+  </component>
+</project>

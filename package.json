@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "electron": "^11.0.3"
+  },
+  "scripts": {
+    "elm": "elm-app start",
+    "start": "electron ."
+  },
+  "main": "main.js"
+}
