@@ -1,6 +1,7 @@
 port module Main exposing (..)
 
 import Browser
+import Commit.Build
 import Credentials exposing (Credentials)
 import Element exposing (Element)
 import Element.Background
@@ -8,7 +9,7 @@ import Element.Font
 import Html exposing (Html)
 import Json.Decode
 import Login
-import Repo exposing (Repo)
+import PR.Page
 import UI.Color
 
 
@@ -21,7 +22,7 @@ port notification : { status : String } -> Cmd msg
 
 type Model
     = Login Login.Model
-    | PRs Credentials Repo.Model
+    | PRs Credentials PR.Page.Model
 
 
 init : Json.Decode.Value -> ( Model, Cmd Msg )
@@ -35,7 +36,7 @@ init flag =
         Ok cred ->
             let
                 ( m, c ) =
-                    Repo.init { credentials = cred, data = [] }
+                    PR.Page.init cred
             in
             ( PRs cred m, Cmd.map PRsMsg c )
 
@@ -49,7 +50,7 @@ init flag =
 
 type Msg
     = LoginMsg Login.Msg
-    | PRsMsg Repo.Msg
+    | PRsMsg PR.Page.Msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -63,7 +64,7 @@ update msg model =
                             Credentials.init data
 
                         ( prsModel, prsCMD ) =
-                            Repo.init { credentials = cred, data = data.data }
+                            PR.Page.init cred
 
                         cmd =
                             Cmd.map PRsMsg prsCMD
@@ -74,15 +75,12 @@ update msg model =
                     ( Login newLoginModel, Cmd.map LoginMsg cmd )
 
         ( PRsMsg prMsg, PRs cred prModel ) ->
-            case Repo.update cred prModel prMsg of
-                ( _, _, Just Repo.Logout ) ->
-                    ( Login <| Login.init { username = Tuple.first cred, password = "" }, Cmd.none )
-
-                ( newModel, newCmd, Just (Repo.PRDataChanged status) ) ->
-                    ( PRs cred newModel, Cmd.batch [ Cmd.map PRsMsg newCmd, notification { status = status } ] )
-
+            case PR.Page.update cred prModel prMsg of
                 ( newModel, newCmd, Nothing ) ->
                     ( PRs cred newModel, Cmd.map PRsMsg newCmd )
+
+                ( newModel, newCmd, Just (PR.Page.PRBuildStatusChangedFromTo pr from to) ) ->
+                    ( PRs cred newModel, Cmd.batch [ Cmd.map PRsMsg newCmd, notification { status = Commit.Build.statusToString to } ] )
 
         ( _, _ ) ->
             ( model, Cmd.none )
@@ -95,7 +93,7 @@ update msg model =
 view : Model -> Html Msg
 view model =
     Element.layout
-        [ Element.Font.size 16
+        [ Element.Font.size 14
         , Element.Font.color UI.Color.black
         , Element.Font.alignLeft
         , Element.Background.color UI.Color.greyTone5
@@ -107,7 +105,7 @@ view model =
                 Element.map LoginMsg <| Login.view loginModel
 
             PRs _ prsModel ->
-                Element.map PRsMsg <| Repo.view prsModel
+                Element.map PRsMsg <| PR.Page.view prsModel
         )
 
 

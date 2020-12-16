@@ -1,52 +1,34 @@
-module User exposing (PR, User, init)
+module User exposing (User, fetch)
 
+import API
 import Credentials exposing (Credentials)
+import Http
 import Json.Decode
-import Json.Decode.Pipeline exposing (required)
+import Json.Decode.Pipeline exposing (required, requiredAt)
+import Task exposing (Task)
 
 
 type alias User =
-    Credentials
-
-
-init : { a | username : String, password : String } -> User
-init =
-    Credentials.init
-
-
-type alias PR =
-    { id : String
-    , title : String
+    { uuid : String
+    , username : String
+    , displayName : String
+    , avatarURL : String
     }
 
 
-decodePRList : Json.Decode.Decoder (List PR)
-decodePRList =
-    Json.Decode.field "values" <|
-        Json.Decode.list
-            (Json.Decode.succeed PR
-                |> required "id" Json.Decode.string
-                |> required "title" Json.Decode.string
-            )
+decode : Json.Decode.Decoder User
+decode =
+    Json.Decode.succeed User
+        |> required "uuid" Json.Decode.string
+        |> required "username" Json.Decode.string
+        |> required "display_name" Json.Decode.string
+        |> requiredAt [ "links", "avatar", "href" ] Json.Decode.string
 
 
-
---
---fetchUserPRs : User -> (RemoteData.WebData (List PR) -> msg) -> Cmd msg
---fetchUserPRs { username, password } toMsg =
---    Http.get
---        { url = apiUrl username password ("/pullrequests/" ++ username ++ "?state=MERGED")
---        , expect = Http.expectJson (RemoteData.fromResult >> toMsg) decodePRList
---        }
---
---
---checkAccess : User -> (RemoteData.WebData Bool -> msg) -> Cmd msg
---checkAccess user toMsg =
---    Http.get
---        { url = apiUrl user.username user.password "/user"
---        , expect = Http.expectJson (RemoteData.fromResult >> toMsg) (Json.Decode.succeed True)
---        }
---
---
---x =
---    Http.task
+fetch : Credentials -> Task Http.Error User
+fetch credentials =
+    API.get
+        { url = API.baseUrl ++ "/user"
+        , decoder = decode
+        , creds = credentials
+        }

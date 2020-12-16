@@ -35,12 +35,18 @@ baseUrl =
     "https://api.bitbucket.org/2.0"
 
 
-get :
+type alias Params a =
     { url : String
     , creds : Credentials
     , decoder : Json.Decode.Decoder a
     }
-    -> Task Http.Error a
+
+
+
+-- todo handle 429 rate limit
+
+
+get : Params a -> Task Http.Error a
 get { url, creds, decoder } =
     Http.task
         { method = "GET"

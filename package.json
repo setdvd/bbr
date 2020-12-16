@@ -4,7 +4,8 @@
   },
   "scripts": {
     "elm": "elm-app start",
-    "start": "electron ."
+    "start": "electron .",
+    "build": "elm-app build"
   },
   "main": "main.js"
 }

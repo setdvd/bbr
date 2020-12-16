@@ -2,6 +2,7 @@ module UI.Layout exposing (..)
 
 import Element exposing (..)
 import Element.Background
+import Element.Region
 import UI
 import UI.Color
 import UI.Font
@@ -12,6 +13,7 @@ page attr =
     column
         (List.concat
             [ [ width (UI.fillMax 536)
+              , spacing 16
               , Element.padding 16
               , centerX
               , height fill
@@ -26,7 +28,8 @@ header : List (List (Element.Attribute msg)) -> String -> Element msg
 header attr headerText =
     el
         (List.concat
-            [ UI.Font.h1
+            [ [ Element.Region.heading 1 ]
+            , UI.Font.h6HeadLine
             , List.concat attr
             ]
         )

@@ -33,9 +33,19 @@ greyTone5 =
     Element.rgb255 237 238 240
 
 
+greyTone10 : Element.Color
+greyTone10 =
+    Element.rgb255 232 235 239
+
+
 greyTone50 : Element.Color
 greyTone50 =
     Element.rgb255 139 149 158
+
+
+success : Element.Color
+success =
+    Element.rgb255 9 190 103
 
 
 error : Element.Color

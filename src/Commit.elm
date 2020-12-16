@@ -1,44 +1,29 @@
-module Commit exposing (..)
+module Commit exposing (Commit, fetch)
 
 import API
 import Credentials exposing (Credentials)
 import Http
 import Json.Decode
+import Json.Decode.Pipeline
 import Task exposing (Task)
 
 
 type alias Commit =
     { url : String
-    , status : String
+    , statusUrl : String
     }
 
 
-type alias Status =
-    String
+decode : String -> Json.Decode.Decoder Commit
+decode url =
+    Json.Decode.succeed (Commit url)
+        |> Json.Decode.Pipeline.requiredAt [ "links", "statuses", "href" ] Json.Decode.string
 
 
-decode : Json.Decode.Decoder String
-decode =
-    Json.Decode.at [ "links", "statuses", "href" ] Json.Decode.string
-
-
-decodeStatus : Json.Decode.Decoder Status
-decodeStatus =
-    Json.Decode.field "values"
-        (Json.Decode.list (Json.Decode.field "state" Json.Decode.string))
-        |> Json.Decode.map (\ss -> Maybe.withDefault "unknown" (List.head ss))
-
-
-fetch : Credentials -> String -> Task Http.Error Status
+fetch : Credentials -> String -> Task Http.Error Commit
 fetch credentials url =
     API.get
         { url = url
         , creds = credentials
-        , decoder = decode
+        , decoder = decode url
         }
-        |> Task.andThen (fetchCommitStatus credentials)
-
-
-fetchCommitStatus : Credentials -> String -> Task Http.Error Status
-fetchCommitStatus credentials url =
-    API.get { url = url, creds = credentials, decoder = decodeStatus }

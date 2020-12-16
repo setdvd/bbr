@@ -3,8 +3,8 @@ module Login exposing (..)
 import Credentials
 import Element exposing (Element)
 import Http
+import PR exposing (PR)
 import RemoteData
-import Repo
 import Task
 import UI.Icons
 import UI.Input
@@ -14,7 +14,7 @@ import UI.Layout
 type alias Model =
     { username : String
     , password : String
-    , submit : RemoteData.WebData Repo.Data
+    , submit : RemoteData.WebData (List PR)
     }
 
 
@@ -27,14 +27,14 @@ type Msg
     = PasswordChange String
     | UsernameChange String
     | SubmitClick
-    | SubmitFetched (Result Http.Error Repo.Data)
+    | SubmitFetched (Result Http.Error (List PR))
 
 
 type External
     = LoggedIn
         { username : String
         , password : String
-        , data : Repo.Data
+        , data : List PR
         }
 
 
@@ -48,7 +48,7 @@ update model msg =
             ( { model | username = string, submit = RemoteData.NotAsked }, Cmd.none, Nothing )
 
         SubmitClick ->
-            ( { model | submit = RemoteData.Loading }, Task.attempt SubmitFetched (Repo.fetchActiveRepos (Credentials.init model)), Nothing )
+            ( { model | submit = RemoteData.Loading }, Task.attempt SubmitFetched (PR.fetchOpenPRs (Credentials.init model)), Nothing )
 
         SubmitFetched result ->
             case result of
