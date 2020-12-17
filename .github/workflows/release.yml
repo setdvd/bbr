@@ -57,7 +57,7 @@ jobs:
 
           # If the commit is tagged with a version (e.g. "v1.0.0"),
           # release the app after building
-          release: ${{ steps.bump-version.output.VERSION }}
+          release: ${{ !!steps.bump-version.output.VERSION }}
 
           mac_certs: ${{ secrets.mac_certs }}
           mac_certs_password: ${{ secrets.mac_certs_password }}
