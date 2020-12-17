@@ -6,20 +6,24 @@ const BrowserWindow = electron.BrowserWindow;
 
 const path = require('path');
 const url = require('url');
+const autoUpdater = require("electron-updater");
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow;
 
 function createWindow() {
+
     // Create the browser window.
     mainWindow = new BrowserWindow({width: 800, height: 600});
 
-    // and load the index.html of the app.
-    mainWindow.loadURL('http://localhost:3000');
-
-    // Open the DevTools.
-    mainWindow.webContents.openDevTools();
+    if(app.isPackaged){
+        autoUpdater.checkForUpdatesAndNotify();
+        mainWindow.loadURL(path.join('file://', __dirname, '/build/index.html'));
+    } else {
+        mainWindow.webContents.openDevTools();
+        mainWindow.loadURL('http://localhost:3000');
+    }
 
     // Emitted when the window is closed.
     mainWindow.on('closed', function () {
