@@ -9,6 +9,8 @@ jobs:
   bump-version:
     name: "Bump Version on master"
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs }}
 
     steps:
       - name: "Checkout source code"
@@ -17,17 +19,24 @@ jobs:
           ref: ${{ github.ref }}
       - name: "cat package.json"
         run: cat ./package.json
+
       - name: "Setup Node.js"
         uses: "actions/setup-node@v1"
         with:
           node-version: 12
       - name: "Automated Version Bump"
+        id: version
         uses: "phips28/gh-action-bump-version@master"
         with:
           patch-wording:  'patch'
           tag-prefix: ''
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "print"
+        run:
+          run: echo "version bump is ${{ join(steps.version.outputs.*, '\n') }}"
+
       - name: "cat package.json"
         run: cat ./package.json
 
@@ -48,13 +57,16 @@ jobs:
         with:
           node-version: 10
       - name: Get Versions
-        run: echo "version is ${{ steps.bump-version.outputs }}"
+        run: echo "version is ${{ needs.bump-version.outputs }}"
 
       - name: Get Versions
-        run: echo "version is ${{ steps.bump-version.outputs.output1 }}"
+        run: echo "version is ${{ needs.bump-version.outputs }}"
+
+      - name: Get Versions
+        run: echo "version is ${{ needs.bump-version.outputs.output1 }}"
 
       - name: Get Version
-        run: echo "release is ${{ !!steps.bump-version.outputs }}"
+        run: echo "release is ${{ !!needs.bump-version.outputs }}"
 
       - name: Build/release Electron app
         uses: samuelmeuli/action-electron-builder@v1
