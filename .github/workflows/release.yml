@@ -17,28 +17,25 @@ jobs:
         uses: "actions/checkout@v2"
         with:
           ref: ${{ github.ref }}
-      - name: "cat package.json"
-        run: cat ./package.json
 
       - name: "Setup Node.js"
         uses: "actions/setup-node@v1"
         with:
           node-version: 12
+
       - name: "Automated Version Bump"
         id: version
         uses: "phips28/gh-action-bump-version@master"
         with:
           patch-wording: 'patch'
           tag-prefix: ''
+          skip-tag:  'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: "print"
         run: echo "version bump is ${{ join(steps.version.outputs.*, '\n') }}"
 
-
-      - name: "cat package.json"
-        run: cat ./package.json
 
   create-release:
     needs: bump-version
@@ -66,7 +63,6 @@ jobs:
           # (No need to define this secret in the repo settings)
           github_token: ${{ secrets.github_token }}
 
-          draft: ${{ false }}
           release: ${{ !!needs.bump-version.outputs.version }}
 
           mac_certs: ${{ secrets.mac_certs }}
@@ -77,11 +73,12 @@ jobs:
     if: ${{ !!needs.bump-version.outputs.version }}
     needs: [bump-version,create-release]
     steps:
-      - name: Get version from ref
-        id: get-version
-        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+      - name: get-npm-version
+        id: package-version
+        uses: martinbeentjes/npm-get-version-action@master
+
       - name: Publish release on GitHub
         uses: test-room-7/action-publish-release-drafts@v0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          tag-name: ${{ needs.bump-version.outputs.version }}
+          tag-name: ${{ steps.package-version.outputs.current-version}}
