@@ -47,6 +47,7 @@ update model msg =
         UsernameChange string ->
             ( { model | username = string, submit = RemoteData.NotAsked }, Cmd.none, Nothing )
 
+        -- TODO: fetch user object on login [P3] [S]
         SubmitClick ->
             ( { model | submit = RemoteData.Loading }, Task.attempt SubmitFetched (PR.fetchOpenPRs (Credentials.init model)), Nothing )
 
@@ -122,6 +123,7 @@ errorToString error =
         Http.NetworkError ->
             "Network is down"
 
+        -- TODO: add generic error handler to parse common BB errors [P1] [S]
         Http.BadStatus status ->
             case status of
                 401 ->
