@@ -70,7 +70,5 @@ jobs:
           # release the app after building
           release: ${{ !!needs.bump-version.outputs.version }}
 
-          args: "--releaseType=release"
-
           mac_certs: ${{ secrets.mac_certs }}
           mac_certs_password: ${{ secrets.mac_certs_password }}
