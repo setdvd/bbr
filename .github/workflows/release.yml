@@ -57,16 +57,7 @@ jobs:
         with:
           node-version: 10
       - name: Get Versions
-        run: echo "version is ${{ needs.bump-version.outputs.version }}"
-
-      - name: Get Versions
-        run: echo "version is ${{ needs.bump-version.outputs }}"
-
-      - name: Get Versions
-        run: echo "version is ${{ needs.bump-version.outputs.output1 }}"
-
-      - name: Get Version
-        run: echo "release is ${{ !!needs.bump-version.outputs.version }}"
+        run: echo "version is ${{ !!needs.bump-version.outputs.version }}"
 
       - name: Build/release Electron app
         uses: samuelmeuli/action-electron-builder@v1
@@ -77,7 +68,7 @@ jobs:
 
           # If the commit is tagged with a version (e.g. "v1.0.0"),
           # release the app after building
-          release: ${{ !!steps.bump-version.output.VERSION }}
+          release: ${{ !!needs.bump-version.outputs.version }}
 
           mac_certs: ${{ secrets.mac_certs }}
           mac_certs_password: ${{ secrets.mac_certs_password }}
