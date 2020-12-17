@@ -1,11 +1,31 @@
 {
-  "dependencies": {
-    "electron": "^11.0.3"
-  },
+  "name": "bbr",
+  "description": "UI for Bitbucket.com",
+  "version": "0.0.1",
   "scripts": {
+    "postinstall": "electron-builder install-app-deps",
     "elm": "elm-app start",
     "start": "electron .",
-    "build": "elm-app build"
+    "build": "PUBLIC_URL=./ elm-app build",
+    "release": "electron-builder --mac --windows --linux --publish always"
   },
-  "main": "main.js"
+  "main": "main.js",
+  "devDependencies": {
+    "electron": "^11.0.3",
+    "create-elm-app": "^5.22.0",
+    "electron-builder": "^22.9.1"
+  },
+  "build": {
+    "appId": "com.github.setdvd.bbr",
+    "productName": "BBR",
+    "mac": {
+      "category": "public.app-category.developer-tools"
+    },
+    "dmg": {
+      "icon": false
+    }
+  },
+  "dependencies": {
+    "electron-updater": "^4.3.5"
+  }
 }
