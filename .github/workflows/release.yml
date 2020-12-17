@@ -29,7 +29,7 @@ jobs:
         with:
           patch-wording: 'patch'
           tag-prefix: ''
-          skip-tag:  'true'
+          skip-tag: 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -71,12 +71,12 @@ jobs:
   release-draft:
     runs-on: ubuntu-latest
     if: ${{ !!needs.bump-version.outputs.version }}
-    needs: [bump-version,create-release]
+    needs: [ bump-version,create-release ]
     steps:
       - name: "Checkout source code"
-          uses: "actions/checkout@v2"
-          with:
-            ref: ${{ github.ref }}
+        uses: "actions/checkout@v2"
+        with:
+          ref: ${{ github.ref }}
 
       - name: get-npm-version
         id: package-version
@@ -86,4 +86,4 @@ jobs:
         uses: test-room-7/action-publish-release-drafts@v0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          tag-name: ${{ steps.package-version.outputs.current-version}}
+          tag-name: ${{ steps.package-version.outputs.current-version }}
