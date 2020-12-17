@@ -15,11 +15,14 @@ let mainWindow;
 function createWindow() {
 
     // Create the browser window.
-    mainWindow = new BrowserWindow({width: 800, height: 600});
+    mainWindow = new BrowserWindow({
+        width: 800,
+        height: 600,
+    });
 
-    if(app.isPackaged){
+    if (app.isPackaged) {
         autoUpdater.checkForUpdatesAndNotify();
-        mainWindow.loadURL(path.join('file://', __dirname, '/build/index.html'));
+        mainWindow.loadURL(path.join('file://', process.resourcesPath, '/build/index.html'));
     } else {
         mainWindow.webContents.openDevTools();
         mainWindow.loadURL('http://localhost:3000');

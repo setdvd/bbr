@@ -28,7 +28,7 @@ jobs:
         id: version
         uses: "phips28/gh-action-bump-version@master"
         with:
-          patch-wording:  'patch'
+          patch-wording: 'patch'
           tag-prefix: ''
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -40,13 +40,15 @@ jobs:
       - name: "cat package.json"
         run: cat ./package.json
 
-  release:
+  create-release:
     needs: bump-version
     runs-on: ${{ matrix.os }}
 
+    if: ${{ !!needs.bump-version.outputs.version }}
+
     strategy:
       matrix:
-        os: [macos-latest]
+        os: [ macos-latest ]
 
     steps:
       - name: Check out Git repository
@@ -56,8 +58,6 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 10
-      - name: Get Versions
-        run: echo "version is ${{ !!needs.bump-version.outputs.version }}"
 
       - name: Build/release Electron app
         uses: samuelmeuli/action-electron-builder@v1
@@ -71,3 +71,17 @@ jobs:
 
           mac_certs: ${{ secrets.mac_certs }}
           mac_certs_password: ${{ secrets.mac_certs_password }}
+
+  release-draft:
+    runs-on: ubuntu-latest
+    if: ${{ !!needs.bump-version.outputs.version }}
+    needs: [bump-version,create-release]
+    steps:
+      - name: Get version from ref
+        id: get-version
+        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+      - name: Publish release on GitHub
+        uses: test-room-7/action-publish-release-drafts@v0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          tag-name: ${{ needs.bump-version.outputs.version }}

@@ -6,7 +6,8 @@
     "postinstall": "electron-builder install-app-deps",
     "elm": "elm-app start",
     "start": "electron .",
-    "build": "PUBLIC_URL=./ elm-app build"
+    "build": "PUBLIC_URL=./ elm-app build",
+    "dist": "electron-builder --mac"
   },
   "main": "main.js",
   "devDependencies": {
@@ -22,7 +23,17 @@
     },
     "dmg": {
       "icon": false
-    }
+    },
+    "files": [
+      "**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "build",
+        "to": "build",
+        "filter": ["**/*"]
+      }
+    ]
   },
   "dependencies": {
     "electron-updater": "^4.3.5"
