@@ -50,6 +50,8 @@ jobs:
     steps:
       - name: "Checkout source code"
         uses: "actions/checkout@v2"
+        with:
+          ref: ${{ github.ref }}
 
       - name: Install Node.js, NPM and Yarn
         uses: actions/setup-node@v1
@@ -75,6 +77,8 @@ jobs:
     steps:
       - name: "Checkout source code"
         uses: "actions/checkout@v2"
+        with:
+          ref: ${{ github.ref }}
 
       - name: get-npm-version
         id: package-version
