@@ -34,8 +34,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: "print"
-        run:
-          run: echo "version bump is ${{ join(steps.version.outputs.*, '\n') }}"
+        run: echo "version bump is ${{ join(steps.version.outputs.*, '\n') }}"
+
 
       - name: "cat package.json"
         run: cat ./package.json
