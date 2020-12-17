@@ -6,8 +6,7 @@
     "postinstall": "electron-builder install-app-deps",
     "elm": "elm-app start",
     "start": "electron .",
-    "build": "PUBLIC_URL=./ elm-app build",
-    "release": "electron-builder --mac --windows --linux --publish always"
+    "build": "PUBLIC_URL=./ elm-app build"
   },
   "main": "main.js",
   "devDependencies": {
