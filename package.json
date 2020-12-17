@@ -15,9 +15,6 @@
     "electron-builder": "^22.9.1"
   },
   "build": {
-    "publish": {
-      "releaseType": "release"
-    },
     "appId": "com.github.setdvd.bbr",
     "productName": "BBR",
     "mac": {
