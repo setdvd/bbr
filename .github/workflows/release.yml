@@ -48,10 +48,10 @@ jobs:
         with:
           node-version: 10
       - name: Get Version
-        run: echo "version is ${{ steps.bump-version.output.VERSION }}"
+        run: echo "version is ${{ steps.bump-version.output.newTag }}"
 
       - name: Get Version
-        run: echo "release is ${{ !!steps.bump-version.output.VERSION }}"
+        run: echo "release is ${{ !!steps.bump-version.output.newTag }}"
 
       - name: Build/release Electron app
         uses: samuelmeuli/action-electron-builder@v1
