@@ -10,7 +10,7 @@ jobs:
     name: "Bump Version on master"
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ steps.version.outputs }}
+      version: ${{ join(steps.version.outputs.*, '\n') }}
 
     steps:
       - name: "Checkout source code"
@@ -57,7 +57,7 @@ jobs:
         with:
           node-version: 10
       - name: Get Versions
-        run: echo "version is ${{ needs.bump-version.outputs }}"
+        run: echo "version is ${{ needs.bump-version.outputs.version }}"
 
       - name: Get Versions
         run: echo "version is ${{ needs.bump-version.outputs }}"
@@ -66,7 +66,7 @@ jobs:
         run: echo "version is ${{ needs.bump-version.outputs.output1 }}"
 
       - name: Get Version
-        run: echo "release is ${{ !!needs.bump-version.outputs }}"
+        run: echo "release is ${{ !!needs.bump-version.outputs.version }}"
 
       - name: Build/release Electron app
         uses: samuelmeuli/action-electron-builder@v1
