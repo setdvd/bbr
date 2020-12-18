@@ -13,3 +13,4 @@ jobs:
         id: "todo"
         with:
           COMMENT_MARKER: "--"
+          LABEL: "-- TODO"
