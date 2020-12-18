@@ -51,3 +51,8 @@ success =
 error : Element.Color
 error =
     Element.rgb255 245 76 62
+
+
+warning : Element.Color
+warning =
+    Element.rgb255 247 147 13

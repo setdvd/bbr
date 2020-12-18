@@ -4,12 +4,14 @@ module Commit.Build exposing
     , fetch
     , shouldNotify
     , statusToString
+    , viewBuildStatusString
     , viewStateIcon
     )
 
 import API
 import Credentials exposing (Credentials)
 import Element exposing (Element)
+import Element.Font
 import Http
 import Json.Decode
 import Json.Decode.Pipeline exposing (required, requiredAt)
@@ -99,25 +101,55 @@ fetch credentials url =
         }
 
 
+viewBuildStatusString : Build -> Element msg
+viewBuildStatusString build =
+    let
+        buildString =
+            "Build: " ++ statusToString build
+
+        color =
+            case build of
+                Empty ->
+                    UI.Color.greyTone50
+
+                Started buildInfo ->
+                    case buildInfo.status of
+                        InProgress ->
+                            UI.Color.greyTone50
+
+                        Success ->
+                            UI.Color.greyTone50
+
+                        Failed ->
+                            UI.Color.error
+
+                        Stopped ->
+                            UI.Color.error
+    in
+    Element.el
+        [ Element.Font.color color ]
+        (Element.text buildString)
+
+
 statusToString : Build -> String
 statusToString build =
     case build of
         Empty ->
-            "Not Started"
+            "not started"
 
         Started buildInfo ->
             case buildInfo.status of
                 InProgress ->
-                    "In progress"
+                    "in progress"
 
                 Success ->
-                    "Success"
+                    "success"
 
                 Failed ->
-                    "Failed"
+                    "failed"
 
                 Stopped ->
-                    "Stopped"
+                    "stopped"
 
 
 viewStateIcon : Build -> UI.Attributes msg -> Element msg

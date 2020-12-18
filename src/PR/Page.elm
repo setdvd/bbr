@@ -1,19 +1,23 @@
 module PR.Page exposing (External(..), Model, Msg, init, update, view)
 
 import Commit exposing (Commit)
-import Commit.Build exposing (Build)
+import Commit.Build exposing (Build, viewBuildStatusString)
 import Credentials exposing (Credentials)
 import Element exposing (Element)
+import Element.Font
 import Http
 import List.Extra
 import Maybe.Extra
 import PR exposing (PR)
+import PR.DiffStat
+import PR.Participant exposing (viewApprovedStatus)
 import Process
 import ReloadableData exposing (ReloadableData(..))
 import Task exposing (Task)
 import Task.Extra
 import UI
 import UI.Card
+import UI.Color
 import UI.Font
 import UI.Layout
 
@@ -22,6 +26,7 @@ type alias PRItem =
     { pr : PR
     , lastCommit : Commit
     , build : Build
+    , conflicts : Bool
     }
 
 
@@ -40,30 +45,40 @@ fetch credentials =
         fetchBuildStatus =
             .statusUrl >> Commit.Build.fetch credentials
 
-        --fetchActivity : PR -> Task Http.Error Activity
+        fetchDiffStat : PR -> Task Http.Error PR.DiffStat.PRDiffStat
+        fetchDiffStat =
+            PR.DiffStat.fetch credentials
     in
     credentials
         |> PR.fetchOpenPRs
         |> Task.andThen
             (\prs ->
-                prs
-                    |> List.map fetchCommit
-                    |> Task.Extra.traverse
-                    |> Task.map (\commits -> ( prs, commits ))
+                let
+                    fetchCommits =
+                        prs
+                            |> List.map fetchCommit
+                            |> Task.Extra.traverse
+
+                    fetchDiffStats =
+                        prs
+                            |> List.map fetchDiffStat
+                            |> Task.Extra.traverse
+                in
+                Task.map2 (\commits conflicts -> ( prs, commits, conflicts )) fetchCommits fetchDiffStats
             )
         |> Task.andThen
-            (\( prs, commits ) ->
+            (\( prs, commits, conflicts ) ->
                 commits
                     |> List.map fetchBuildStatus
                     |> Task.Extra.traverse
-                    |> Task.map (\builds -> List.map3 PRItem prs commits builds)
+                    |> Task.map (\builds -> List.map4 PRItem prs commits builds conflicts)
             )
         |> Task.attempt PRsFetched
 
 
 reFetchIntervalMS : Float
 reFetchIntervalMS =
-    1000 * 10
+    1000 * 60 * 5
 
 
 diff : List PRItem -> List PRItem -> Maybe External
@@ -144,7 +159,21 @@ view model =
 
                 -- TODO: [P3] [S] use generic error
                 Failed e ->
-                    Element.text "Loading Error ..."
+                    case e of
+                        Http.BadUrl string ->
+                            Element.text "bad url"
+
+                        Http.Timeout ->
+                            Element.text "timeout"
+
+                        Http.NetworkError ->
+                            Element.text "network down"
+
+                        Http.BadStatus int ->
+                            Element.text <| "bad status" ++ String.fromInt int
+
+                        Http.BadBody string ->
+                            Element.text string
 
                 Reloading list ->
                     viewPRItems list
@@ -172,12 +201,26 @@ viewItem pRItem =
     -- TODO: [Focus] [L] add reviewer status
     UI.Card.box
         []
-        [ UI.Card.avatar [] (Commit.Build.viewStateIcon pRItem.build [ UI.center ])
-        , Element.column
+        --[ UI.Card.avatar [] (Commit.Build.viewStateIcon pRItem.build [ UI.center ])
+        [ Element.column
             [ Element.width Element.fill
             , Element.spacing 8
             ]
             [ Element.paragraph [] [ Element.text pRItem.pr.name ]
-            , Element.paragraph UI.Font.caption [ Element.text <| Commit.Build.statusToString pRItem.build ]
+            , Element.row
+                ([ Element.width Element.fill, Element.spacing 8 ] ++ UI.Font.caption)
+                (List.intersperse
+                    (Element.el [] (Element.text "·"))
+                    ([ viewBuildStatusString pRItem.build
+                     , viewApprovedStatus pRItem.pr.participants
+                     ]
+                        ++ (if pRItem.conflicts then
+                                [ Element.el [ Element.Font.color UI.Color.warning ] (Element.text "merge conflict") ]
+
+                            else
+                                []
+                           )
+                    )
+                )
             ]
         ]

@@ -1,8 +1,9 @@
-module API exposing (baseUrl, get)
+module API exposing (baseUrl, get, post)
 
 import Credentials exposing (Credentials)
 import Http
 import Json.Decode
+import Json.Encode
 import Task exposing (Task)
 
 
@@ -42,6 +43,14 @@ type alias Params a =
     }
 
 
+type alias PostParams a =
+    { url : String
+    , creds : Credentials
+    , decoder : Json.Decode.Decoder a
+    , body : Json.Encode.Value
+    }
+
+
 
 -- todo handle 429 rate limit
 
@@ -53,6 +62,18 @@ get { url, creds, decoder } =
         , headers = [ Credentials.header creds ]
         , url = url
         , body = Http.emptyBody
+        , resolver = Http.stringResolver (expectJson decoder)
+        , timeout = Nothing
+        }
+
+
+post : PostParams a -> Task Http.Error a
+post { url, creds, decoder, body } =
+    Http.task
+        { method = "POST"
+        , headers = [ Credentials.header creds ]
+        , url = url
+        , body = Http.jsonBody body
         , resolver = Http.stringResolver (expectJson decoder)
         , timeout = Nothing
         }

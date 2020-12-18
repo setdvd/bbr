@@ -43,6 +43,25 @@ fromResult reloadableData result =
             ReloadingFailed value t
 
 
+fromError : ReloadableData e t -> e -> ReloadableData e t
+fromError reloadableData e =
+    case reloadableData of
+        Loading ->
+            Failed e
+
+        Loaded t ->
+            ReloadingFailed e t
+
+        Failed _ ->
+            Failed e
+
+        Reloading t ->
+            ReloadingFailed e t
+
+        ReloadingFailed _ t ->
+            ReloadingFailed e t
+
+
 toLoading : ReloadableData e t -> ReloadableData e t
 toLoading reloadableData =
     case reloadableData of

@@ -14,7 +14,7 @@ import UI.Layout
 type alias Model =
     { username : String
     , password : String
-    , submit : RemoteData.WebData (List PR)
+    , submit : RemoteData.WebData (List PR.PREssential)
     }
 
 
@@ -27,14 +27,14 @@ type Msg
     = PasswordChange String
     | UsernameChange String
     | SubmitClick
-    | SubmitFetched (Result Http.Error (List PR))
+    | SubmitFetched (Result Http.Error (List PR.PREssential))
 
 
 type External
     = LoggedIn
         { username : String
         , password : String
-        , data : List PR
+        , data : List PR.PREssential
         }
 
 
@@ -49,7 +49,7 @@ update model msg =
 
         -- TODO: fetch user object on login [P3] [S]
         SubmitClick ->
-            ( { model | submit = RemoteData.Loading }, Task.attempt SubmitFetched (PR.fetchOpenPRs (Credentials.init model)), Nothing )
+            ( { model | submit = RemoteData.Loading }, Task.attempt SubmitFetched (PR.fetchOpenPRsEssential (Credentials.init model)), Nothing )
 
         SubmitFetched result ->
             case result of
