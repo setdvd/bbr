@@ -6,26 +6,53 @@ import Http
 import Json.Decode
 import Json.Decode.Pipeline exposing (required, requiredAt)
 import Task exposing (Task)
+import Task.Extra
+
+
+type alias PREssential =
+    { id : Int
+    , name : String
+    , commitUrl : String
+    , selfUrl : String
+    }
 
 
 type alias PR =
     { id : Int
     , name : String
     , commitUrl : String
+    , selfUrl : String
     }
 
 
-decode : Json.Decode.Decoder PR
+decode : Json.Decode.Decoder PREssential
 decode =
     Json.Decode.succeed PR
         |> required "id" Json.Decode.int
         |> required "title" Json.Decode.string
         |> requiredAt [ "source", "commit", "links", "self", "href" ] Json.Decode.string
+        |> requiredAt [ "links", "self", "href" ] Json.Decode.string
 
 
-decodePRList : Json.Decode.Decoder (List PR)
+decodePRList : Json.Decode.Decoder (List PREssential)
 decodePRList =
     Json.Decode.field "values" <| Json.Decode.list decode
+
+
+fetchPrDetails : Credentials -> PREssential -> Task Http.Error PR
+fetchPrDetails credentials pr =
+    API.get
+        { url = pr.selfUrl
+        , creds = credentials
+        , decoder = decode
+        }
+
+
+fetchPRDetailsList : Credentials -> List PREssential -> Task Http.Error (List PR)
+fetchPRDetailsList credentials prEssentials =
+    prEssentials
+        |> List.map (fetchPrDetails credentials)
+        |> Task.Extra.traverse
 
 
 fetchOpenPRs : Credentials -> Task Http.Error (List PR)
@@ -35,3 +62,4 @@ fetchOpenPRs credentials =
         , creds = credentials
         , decoder = decodePRList
         }
+        |> Task.andThen (fetchPRDetailsList credentials)

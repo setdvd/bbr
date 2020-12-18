@@ -7,18 +7,9 @@ jobs:
     runs-on: "ubuntu-latest"
     steps:
       - uses: "actions/checkout@master"
-      - name: "TODO-2-GH-Issue"
-        uses: "jamminroot/todo-2-gh-issue@master"
-        with:
-          TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TODO_PATTERN: "(?<=-- ?TODO[ :]).+"
-          GH_LABEL: "TODO"
-          TRIM: ",: \""
-          TIMEOUT: 2000
-          LINES_BEFORE: 2
-          LINES_AFTER: 5
-          LABELS_PATTERN: "(?<=\\[).+?(?=\\])"
-          LABELS_REPLACE_PATTERN: "\\[(.+?)\\]"
-          IGNORED_LINES_LENGTH: 255
-          FILE_PATTERN: ".elm"
+
+      - name: "TODO to Issue"
+        uses: "alstr/todo-to-issue-action@v2.4.1"
         id: "todo"
+        with:
+          COMMENT_MARKER: "--"

@@ -39,6 +39,8 @@ fetch credentials =
         fetchBuildStatus : Commit -> Task Http.Error Build
         fetchBuildStatus =
             .statusUrl >> Commit.Build.fetch credentials
+
+        --fetchActivity : PR -> Task Http.Error Activity
     in
     credentials
         |> PR.fetchOpenPRs
@@ -61,7 +63,7 @@ fetch credentials =
 
 reFetchIntervalMS : Float
 reFetchIntervalMS =
-    1000 * 2
+    1000 * 10
 
 
 diff : List PRItem -> List PRItem -> Maybe External
