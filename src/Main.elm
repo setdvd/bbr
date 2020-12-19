@@ -25,12 +25,23 @@ type Model
     | PRs Credentials PR.Page.Model
 
 
+versionDecoder : Json.Decode.Decoder String
+versionDecoder =
+    Json.Decode.field "version" Json.Decode.string
+
+
 init : Json.Decode.Value -> ( Model, Cmd Msg )
 init flag =
     let
         credResult : Result Json.Decode.Error Credentials
         credResult =
-            Json.Decode.decodeValue Credentials.decode flag
+            Json.Decode.decodeValue (Json.Decode.field "cred" Credentials.decode) flag
+
+        version : Maybe String
+        version =
+            flag
+                |> Json.Decode.decodeValue versionDecoder
+                |> Result.toMaybe
     in
     case credResult of
         Ok cred ->

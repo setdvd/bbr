@@ -2,14 +2,22 @@ import './main.css';
 import { Elm } from './Main.elm';
 import * as serviceWorker from './serviceWorker';
 
+const urlParams = new URLSearchParams(window.location.search);
+const version = urlParams.get('v');
+
 const CRED_KEY = "CRED"
 
-const flags = JSON.parse(localStorage.getItem(CRED_KEY) || "{}")
+const cred = JSON.parse(localStorage.getItem(CRED_KEY) || "{}")
 
 const app = Elm.Main.init({
   node: document.getElementById('root'),
-  flags,
+  flags:{
+    version,
+    cred
+  },
 });
+
+alert(version)
 
 
 app.ports.notification.subscribe(({status})=>{

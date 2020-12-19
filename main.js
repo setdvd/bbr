@@ -5,8 +5,15 @@ const app = electron.app;
 const BrowserWindow = electron.BrowserWindow;
 
 const path = require('path');
-const url = require('url');
 const {autoUpdater} = require("electron-updater");
+const log = require('electron-log');
+
+
+autoUpdater.logger = log;
+autoUpdater.logger.transports.file.level = 'info';
+
+const pjson = require('./package.json');
+const version = pjson.version
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -22,7 +29,7 @@ function createWindow() {
 
     if (app.isPackaged) {
         autoUpdater.checkForUpdatesAndNotify();
-        mainWindow.loadURL(path.join('file://', process.resourcesPath, '/build/index.html'));
+        mainWindow.loadURL(path.join('file://', process.resourcesPath, `/build/index.html?v=${version}`));
     } else {
         mainWindow.webContents.openDevTools();
         mainWindow.loadURL('http://localhost:3000');
