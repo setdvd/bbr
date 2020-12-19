@@ -5,6 +5,15 @@ import Element.Background
 import Element.Border
 import Html.Attributes
 import UI.Color
+import UI.Font
+
+
+
+-- TODO : Review interface for styling
+--        consider exporting UI.el, column and other counterpart to Element but with api
+--        List (List (Attribute msg)) -> Element msg
+--        and for other "components" or styles just export List (Attribute msg)
+--        then you can easy compose them or and inline one
 
 
 type alias Attributes msg =
@@ -89,3 +98,11 @@ fixed element =
             }
             [ inFront element ]
             none
+
+
+tooltip : List (Attribute msg)
+tooltip =
+    [ Element.Background.color UI.Color.primaryBackground
+    , Element.Border.rounded 12
+    ]
+        ++ UI.Font.caption

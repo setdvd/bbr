@@ -8,6 +8,11 @@ primary =
     Element.rgb255 6 102 235
 
 
+primaryBackground : Element.Color
+primaryBackground =
+    rgb255 230 240 253
+
+
 primaryShadow : Element.Color
 primaryShadow =
     Element.rgba255 6 103 235 0.45

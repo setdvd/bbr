@@ -198,7 +198,6 @@ viewPRItems pRItems =
 
 viewItem : PRItem -> Element Msg
 viewItem pRItem =
-    -- TODO: [Focus] [L] add reviewer status
     UI.Card.box
         []
         --[ UI.Card.avatar [] (Commit.Build.viewStateIcon pRItem.build [ UI.center ])

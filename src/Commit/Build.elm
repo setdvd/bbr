@@ -11,6 +11,8 @@ module Commit.Build exposing
 import API
 import Credentials exposing (Credentials)
 import Element exposing (Element)
+import Element.Background
+import Element.Border
 import Element.Font
 import Http
 import Json.Decode
@@ -157,6 +159,12 @@ viewStateIcon build attributes =
     let
         container =
             UI.container ([ UI.rect 24 ] ++ attributes)
+
+        -- TODO: show status as Icons + tool tip on hover
+        --      labels: ui
+        toolTip =
+            Element.el []
+                (Element.text <| "Build " ++ statusToString build)
     in
     case build of
         Empty ->
