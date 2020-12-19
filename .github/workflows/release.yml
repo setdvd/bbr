@@ -95,4 +95,4 @@ jobs:
         uses: test-room-7/action-publish-release-drafts@v0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          tag-name: ${{ steps.package-version.outputs.current-version }}
+          tag-name: ${{ format('v{0}', steps.package-version.outputs.current-version) }}

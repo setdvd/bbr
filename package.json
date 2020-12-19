@@ -35,17 +35,6 @@
           "**/*"
         ]
       }
-    ],
-    "publish": [
-      {
-        "provider":"github",
-        "repo": "bbr",
-        "owner": "setdvd",
-        "vPrefixedTagName": true,
-        "protocol": "https",
-        "releaseType": "draft",
-        "publishAutoUpdate": true
-      }
     ]
   },
   "dependencies": {
