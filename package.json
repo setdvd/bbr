@@ -35,6 +35,12 @@
           "**/*"
         ]
       }
+    ],
+    "publish": [
+      {
+        "provider": "github",
+        "vPrefixedTagName": false
+      }
     ]
   },
   "dependencies": {
