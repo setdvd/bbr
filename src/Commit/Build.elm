@@ -118,7 +118,7 @@ viewBuildStatusString build =
                             UI.Color.grey50
 
                         Success ->
-                            UI.Color.grey50
+                            UI.Color.green70
 
                         Failed ->
                             UI.Color.error
