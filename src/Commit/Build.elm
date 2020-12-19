@@ -110,15 +110,15 @@ viewBuildStatusString build =
         color =
             case build of
                 Empty ->
-                    UI.Color.greyTone50
+                    UI.Color.grey50
 
                 Started buildInfo ->
                     case buildInfo.status of
                         InProgress ->
-                            UI.Color.greyTone50
+                            UI.Color.grey50
 
                         Success ->
-                            UI.Color.greyTone50
+                            UI.Color.grey50
 
                         Failed ->
                             UI.Color.error
@@ -160,13 +160,13 @@ viewStateIcon build attributes =
     in
     case build of
         Empty ->
-            container (UI.Icons.blur UI.Color.greyTone50)
+            container (UI.Icons.blur UI.Color.grey50)
 
         Started buildInfo ->
             container <|
                 case buildInfo.status of
                     InProgress ->
-                        UI.Icons.clock UI.Color.greyTone50
+                        UI.Icons.clock UI.Color.grey50
 
                     Success ->
                         UI.Icons.done UI.Color.success

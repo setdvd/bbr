@@ -30,7 +30,7 @@ skeleton attrs =
         (concat
             attrs
             [ [ Element.htmlAttribute <| Html.Attributes.class "skeleton"
-              , Element.Background.color UI.Color.greyTone10
+              , Element.Background.color UI.Color.grey10
               ]
             ]
         )

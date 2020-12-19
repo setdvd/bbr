@@ -54,10 +54,10 @@ viewApprovedStatus participants =
 
         color =
             if approvedCount > 0 then
-                UI.Color.success
+                UI.Color.green70
 
             else
-                UI.Color.greyTone50
+                UI.Color.grey50
     in
     Element.el
         [ Element.Font.color color ]

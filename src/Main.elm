@@ -96,7 +96,7 @@ view model =
         [ Element.Font.size 14
         , Element.Font.color UI.Color.black
         , Element.Font.alignLeft
-        , Element.Background.color UI.Color.greyTone5
+        , Element.Background.color UI.Color.grey5
         , Element.height Element.fill
         , Element.width Element.fill
         ]

@@ -1,6 +1,6 @@
 module UI.Color exposing (..)
 
-import Element
+import Element exposing (rgb255)
 
 
 primary : Element.Color
@@ -28,24 +28,29 @@ black =
     Element.rgb255 21 23 26
 
 
-greyTone5 : Element.Color
-greyTone5 =
+grey5 : Element.Color
+grey5 =
     Element.rgb255 237 238 240
 
 
-greyTone10 : Element.Color
-greyTone10 =
+grey10 : Element.Color
+grey10 =
     Element.rgb255 232 235 239
 
 
-greyTone50 : Element.Color
-greyTone50 =
+grey50 : Element.Color
+grey50 =
     Element.rgb255 139 149 158
 
 
 success : Element.Color
 success =
     Element.rgb255 9 190 103
+
+
+green70 : Element.Color
+green70 =
+    rgb255 82 209 148
 
 
 error : Element.Color

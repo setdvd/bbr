@@ -17,7 +17,7 @@ page attr =
               , Element.padding 16
               , centerX
               , height fill
-              , Element.Background.color UI.Color.greyTone5
+              , Element.Background.color UI.Color.grey5
               ]
             , List.concat attr
             ]

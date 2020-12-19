@@ -122,7 +122,7 @@ text attrs options =
                 , label =
                     Element.Input.labelAbove
                         [ class "label"
-                        , Element.Font.color UI.Color.greyTone50
+                        , Element.Font.color UI.Color.grey50
                         , if not empty then
                             labelScale
 

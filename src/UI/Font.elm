@@ -33,5 +33,5 @@ h6HeadLine =
 caption : List (Element.Attribute msg)
 caption =
     [ size 12
-    , color UI.Color.greyTone50
+    , color UI.Color.grey50
     ]
