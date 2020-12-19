@@ -13,14 +13,6 @@ jobs:
       version: ${{ join(steps.version.outputs.*, '\n') }}
 
     steps:
-      - name: "TODO to Issue"
-        uses: "alstr/todo-to-issue-action@v2.4.1"
-        id: "todo"
-        with:
-          TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          COMMENT_MARKER: "--"
-          LABEL: "-- TODO"
-
       - name: "Checkout source code"
         uses: "actions/checkout@v2"
         with:
@@ -30,6 +22,14 @@ jobs:
         uses: "actions/setup-node@v1"
         with:
           node-version: 12
+
+      - name: "TODO to Issue"
+        uses: "alstr/todo-to-issue-action@v2.4.1"
+        id: "todo"
+        with:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COMMENT_MARKER: "--"
+          LABEL: "-- TODO"
 
       - name: "Automated Version Bump"
         id: version
