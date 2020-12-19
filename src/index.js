@@ -17,9 +17,6 @@ const app = Elm.Main.init({
   },
 });
 
-alert(version)
-
-
 app.ports.notification.subscribe(({status})=>{
   if('Notification' in window){
     new window.Notification(`Build status changed to ${status}`)
