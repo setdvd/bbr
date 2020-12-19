@@ -13,6 +13,14 @@ jobs:
       version: ${{ join(steps.version.outputs.*, '\n') }}
 
     steps:
+      - name: "TODO to Issue"
+        uses: "alstr/todo-to-issue-action@v2.4.1"
+        id: "todo"
+        with:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COMMENT_MARKER: "--"
+          LABEL: "-- TODO"
+
       - name: "Checkout source code"
         uses: "actions/checkout@v2"
         with:
@@ -28,7 +36,6 @@ jobs:
         uses: "phips28/gh-action-bump-version@master"
         with:
           patch-wording: 'patch'
-          tag-prefix: ''
           skip-tag: 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

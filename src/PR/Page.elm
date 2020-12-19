@@ -207,7 +207,7 @@ viewItem pRItem =
             , Element.spacing 8
             ]
             [ Element.paragraph [] [ Element.text pRItem.pr.name ]
-            , Element.paragraph
+            , Element.wrappedRow
                 ([ Element.width Element.fill, Element.spacing 8 ] ++ UI.Font.caption)
                 (List.intersperse
                     (Element.el [] (Element.text "·"))
