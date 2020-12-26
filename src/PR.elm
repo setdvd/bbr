@@ -73,13 +73,6 @@ fetchPRDetailsList credentials prEssentials =
         |> Task.Extra.traverse
 
 
-
--- TODO implement approve status for participants
---      [] we should see the number of approve PR has
---      [] if PR has 1 approve and successfully build we should get notification
---      labels: Focus
-
-
 fetchOpenPRsEssential : Credentials -> Task Http.Error (List PREssential)
 fetchOpenPRsEssential credentials =
     API.get

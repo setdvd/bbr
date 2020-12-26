@@ -52,7 +52,7 @@ type alias PostParams a =
 
 
 
--- todo handle 429 rate limit
+-- TODO handle 429 rate limit
 
 
 get : Params a -> Task Http.Error a
