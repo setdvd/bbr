@@ -46,7 +46,7 @@ fromPath string =
 
 icon : Int -> Element msg -> Element msg
 icon size =
-    Element.el (UI.rect size)
+    UI.el [ UI.rect size ]
 
 
 circularProgress : Element.Color -> Element msg

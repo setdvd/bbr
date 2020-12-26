@@ -129,8 +129,8 @@ viewBuildStatusString build =
                         Stopped ->
                             UI.Color.error
     in
-    Element.el
-        [ Element.Font.color color ]
+    UI.el
+        [ [ Element.Font.color color ] ]
         (Element.text buildString)
 
 
@@ -159,12 +159,13 @@ viewStateIcon : Build -> UI.Attributes msg -> Element msg
 viewStateIcon build attributes =
     let
         container =
-            UI.container ([ UI.rect 24 ] ++ attributes)
+            UI.el
+                attributes
 
         -- TODO: show status as Icons + tool tip on hover
         --      labels: ui
         toolTip =
-            Element.el []
+            UI.el []
                 (Element.text <| "Build " ++ statusToString build)
     in
     case build of

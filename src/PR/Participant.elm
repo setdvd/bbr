@@ -4,6 +4,7 @@ import Element exposing (Element)
 import Element.Font
 import Json.Decode
 import Json.Decode.Pipeline exposing (required, requiredAt)
+import UI
 import UI.Color
 
 
@@ -64,9 +65,9 @@ viewApprovedStatus participants =
             else
                 UI.Color.grey50
     in
-    Element.el
-        [ Element.Font.color color ]
-        (Element.text <|
+    UI.el
+        [ [ Element.Font.color color ] ]
+        (UI.text <|
             case approvedCount of
                 0 ->
                     "not approved yet"

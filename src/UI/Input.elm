@@ -1,6 +1,6 @@
 module UI.Input exposing (..)
 
-import Element exposing (..)
+import Element exposing (Attribute, Element)
 import Element.Background
 import Element.Border
 import Element.Font
@@ -18,7 +18,7 @@ button :
     ->
         { label : String
         , onClick : Maybe msg
-        , icon : Maybe (Color -> Element msg)
+        , icon : Maybe (Element.Color -> Element msg)
         }
     -> Element msg
 button attr { label, onClick, icon } =
@@ -56,14 +56,15 @@ button attr { label, onClick, icon } =
             ]
         )
         { label =
-            Element.el
-                [ Element.Font.color UI.Color.white
-                , Element.centerX
-                , Element.centerY
-                , UI.Font.w500
-                , onLeft (Element.el [ Element.moveLeft 8 ] labelIcon)
+            UI.el
+                [ [ Element.Font.color UI.Color.white
+                  , Element.centerX
+                  , Element.centerY
+                  , UI.Font.w500
+                  , Element.onLeft (UI.el [ [ Element.moveLeft 8 ] ] labelIcon)
+                  ]
                 ]
-                (Element.text label)
+                (UI.text label)
         , onPress = onClick
         }
 
@@ -77,16 +78,17 @@ smallButton : UI.Attributes msg -> { label : Element msg, onClick : Maybe msg } 
 smallButton attributes { label, onClick } =
     Element.Input.button
         (UI.concat
-            [ UI.Font.caption
-            , [ Element.Background.color UI.Color.primaryBackground
-              , Element.Font.color UI.Color.primary
-              , Element.paddingXY 12 10
-              , Element.spacing 10
-              , Element.Border.rounded 10
-              , UI.Font.w500
-              ]
-            ]
-            attributes
+            ([ UI.Font.caption
+             , [ Element.Background.color UI.Color.primaryBackground
+               , Element.Font.color UI.Color.primary
+               , Element.paddingXY 12 10
+               , Element.spacing 10
+               , Element.Border.rounded 10
+               , UI.Font.w500
+               ]
+             ]
+                ++ attributes
+            )
         )
         { onPress = onClick
         , label = label
@@ -113,22 +115,24 @@ text attrs options =
                 |> Maybe.map error
                 |> UI.maybe
     in
-    column
-        [ class "input fix-overflow"
-        , width fill
-        , spacing 8
+    UI.column
+        [ [ Element.width Element.fill
+          , Element.spacing 8
+          ]
+        , UI.class "input fix-overflow"
         ]
-        [ column
-            [ width fill
-            , spacing 8
-            , Element.Border.rounded 8
-            , Element.Background.color UI.Color.white
-            , Element.paddingEach
-                { top = 12
-                , right = 16
-                , bottom = 0
-                , left = 16
-                }
+        [ UI.column
+            [ [ Element.width Element.fill
+              , Element.spacing 8
+              , Element.Border.rounded 8
+              , Element.Background.color UI.Color.white
+              , Element.paddingEach
+                    { top = 12
+                    , right = 16
+                    , bottom = 0
+                    , left = 16
+                    }
+              ]
             ]
             [ Element.Input.text
                 (List.concat
@@ -141,19 +145,25 @@ text attrs options =
                 , placeholder =
                     Maybe.map
                         (\placeholderText ->
-                            Element.Input.placeholder [ class "placeholder", transparent (not empty) ] (Element.text placeholderText)
+                            Element.Input.placeholder
+                                (UI.class "placeholder"
+                                    ++ [ Element.transparent (not empty)
+                                       ]
+                                )
+                                (UI.text placeholderText)
                         )
                         options.placeholder
                 , label =
                     Element.Input.labelAbove
-                        [ class "label"
-                        , Element.Font.color UI.Color.grey50
-                        , if not empty then
-                            labelScale
+                        (UI.class "label"
+                            ++ [ Element.Font.color UI.Color.grey50
+                               , if not empty then
+                                    labelScale
 
-                          else
-                            Element.Background.color UI.Color.white
-                        ]
+                                 else
+                                    Element.Background.color UI.Color.white
+                               ]
+                        )
                         (Element.text options.label)
                 }
             , underInputLine
@@ -170,19 +180,20 @@ clearBox : List (Element.Attribute msg)
 clearBox =
     [ Element.Border.width 0
     , Element.Background.color UI.Color.transparent
-    , focused []
+    , Element.focused []
     , Element.padding 0
     ]
 
 
 error : String -> Element msg
 error errorText =
-    paragraph [ width fill, Element.Font.color UI.Color.error, paddingXY 16 0 ] [ Element.text errorText ]
-
-
-class : String -> Element.Attribute msg
-class className =
-    Element.htmlAttribute <| Html.Attributes.class className
+    UI.paragraph
+        [ [ Element.width Element.fill
+          , Element.Font.color UI.Color.error
+          , Element.paddingXY 16 0
+          ]
+        ]
+        [ UI.text errorText ]
 
 
 labelScale : Element.Attribute msg
@@ -192,10 +203,11 @@ labelScale =
 
 underInputLine : Element msg
 underInputLine =
-    el
-        [ width fill
-        , height <| px 2
-        , Element.Background.color UI.Color.primary
-        , class "status-border"
+    UI.el
+        [ [ Element.width Element.fill
+          , Element.height <| Element.px 2
+          , Element.Background.color UI.Color.primary
+          ]
+        , UI.class "status-border"
         ]
-        none
+        Element.none

@@ -1,6 +1,6 @@
 module UI exposing (..)
 
-import Element exposing (..)
+import Element exposing (Attribute, Element)
 import Element.Background
 import Element.Border
 import Html.Attributes
@@ -8,84 +8,47 @@ import UI.Color
 import UI.Font
 
 
-
--- TODO : Review interface for styling
---        consider exporting UI.el, column and other counterpart to Element but with api
---        List (List (Attribute msg)) -> Element msg
---        and for other "components" or styles just export List (Attribute msg)
---        then you can easy compose them or and inline one
-
-
 type alias Attributes msg =
     List (List (Attribute msg))
 
 
-concat : Attributes msg -> Attributes msg -> List (Attribute msg)
-concat parent own =
-    List.concat (own ++ parent)
+
+-- Base
 
 
-circle : Int -> List (Element.Attribute msg)
-circle size =
-    [ Element.Border.rounded size
-    , width <| px size
-    , height <| px size
-    ]
+class : String -> List (Element.Attribute msg)
+class className =
+    [ Element.htmlAttribute <| Html.Attributes.class className ]
 
 
-skeleton : Attributes msg -> Element msg
-skeleton attrs =
-    el
-        (concat
-            attrs
-            [ [ Element.htmlAttribute <| Html.Attributes.class "skeleton"
-              , Element.Background.color UI.Color.grey10
-              ]
-            ]
-        )
-        none
+text : String -> Element msg
+text string =
+    Element.text string
 
 
-box : Attributes msg -> Element msg -> Element msg
-box attr =
-    el (List.concat attr)
+el : Attributes msg -> Element msg -> Element msg
+el attributes =
+    Element.el (List.concat attributes)
 
 
-container : Attributes msg -> Element msg -> Element msg
-container attributes =
-    box
-        ([ [ width fill
-           , Element.Border.rounded 12
-           , Element.Background.color UI.Color.white
-           ]
-         ]
-            ++ attributes
-        )
+row : Attributes msg -> List (Element msg) -> Element msg
+row attributes elements =
+    Element.row (List.concat attributes) elements
 
 
-fillWH : List (Attribute msg)
-fillWH =
-    [ width fill, height fill ]
+wrappedRow : Attributes msg -> List (Element msg) -> Element msg
+wrappedRow attributes elements =
+    Element.wrappedRow (List.concat attributes) elements
 
 
-rect : Int -> List (Attribute msg)
-rect size =
-    [ width <| px size, height <| px size ]
+column : Attributes msg -> List (Element msg) -> Element msg
+column attributes elements =
+    Element.column (List.concat attributes) elements
 
 
-maybe : Maybe (Element msg) -> Element msg
-maybe =
-    Maybe.withDefault Element.none
-
-
-fillMax : Int -> Element.Length
-fillMax maxSize =
-    Element.maximum maxSize Element.fill
-
-
-center : List (Attribute msg)
-center =
-    [ centerX, centerY ]
+paragraph : Attributes msg -> List (Element msg) -> Element msg
+paragraph attributes elements =
+    Element.paragraph (List.concat attributes) elements
 
 
 fixed : Element msg -> Element msg
@@ -96,13 +59,82 @@ fixed element =
                 [ Element.noStaticStyleSheet
                 ]
             }
-            [ inFront element ]
-            none
+            [ Element.inFront element ]
+            Element.none
+
+
+
+-- Helpers
+
+
+concat : Attributes msg -> List (Attribute msg)
+concat attr =
+    List.concat attr
+
+
+maybe : Maybe (Element msg) -> Element msg
+maybe =
+    Maybe.withDefault Element.none
+
+
+
+-- Classes
+
+
+circle : Int -> List (Element.Attribute msg)
+circle size =
+    [ Element.Border.rounded size
+    , Element.width <| Element.px size
+    , Element.height <| Element.px size
+    ]
+
+
+skeleton : List (Attribute msg)
+skeleton =
+    [ Element.htmlAttribute <| Html.Attributes.class "skeleton"
+    , Element.Background.color UI.Color.grey10
+    ]
+
+
+container : List (Attribute msg)
+container =
+    [ Element.width Element.fill
+    , Element.Border.rounded 12
+    , Element.Background.color UI.Color.white
+    ]
+
+
+fillWH : List (Attribute msg)
+fillWH =
+    [ Element.width Element.fill
+    , Element.height Element.fill
+    ]
+
+
+fillMax : Int -> Element.Length
+fillMax maxSize =
+    Element.maximum maxSize Element.fill
+
+
+rect : Int -> List (Attribute msg)
+rect size =
+    [ Element.width <| Element.px size
+    , Element.height <| Element.px size
+    ]
+
+
+center : List (Attribute msg)
+center =
+    [ Element.centerX
+    , Element.centerY
+    ]
 
 
 tooltip : List (Attribute msg)
 tooltip =
-    [ Element.Background.color UI.Color.primaryBackground
-    , Element.Border.rounded 12
-    ]
-        ++ UI.Font.caption
+    concat
+        [ [ Element.Background.color UI.Color.primaryBackground
+          , Element.Border.rounded 12
+          ]
+        , UI.Font.caption
+        ]

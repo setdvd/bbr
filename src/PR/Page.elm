@@ -249,7 +249,7 @@ view global model =
         content =
             case model.prItems of
                 ReloadableData.Loading ->
-                    Element.column [ Element.width Element.fill ]
+                    UI.column [ [ Element.width Element.fill ] ]
                         (List.range 1 3
                             |> List.map (always UI.Card.skeleton)
                         )
@@ -285,14 +285,15 @@ view global model =
     UI.Layout.page
         []
         [ UI.Layout.header [] "PRs List"
-        , UI.container [] content
+        , UI.el [ UI.container ] content
         ]
 
 
 viewPRItems : Global -> Model -> List PRItem -> Element Msg
 viewPRItems global model pRItems =
-    Element.column
-        [ Element.width Element.fill
+    UI.column
+        [ [ Element.width Element.fill
+          ]
         ]
         (List.map (viewItem global model) pRItems)
 
@@ -324,13 +325,14 @@ isPRItemPassMergeRule mergeRule pRItem =
 
 viewItem : Global -> Model -> PRItem -> Element Msg
 viewItem global model pRItem =
-    UI.Card.box
-        []
-        [ Element.column
-            [ Element.width Element.fill
-            , Element.spacing 8
+    UI.row
+        [ UI.Card.box ]
+        [ UI.column
+            [ [ Element.width Element.fill
+              , Element.spacing 8
+              ]
             ]
-            [ Element.paragraph [] [ Element.text pRItem.pr.name ]
+            [ UI.paragraph [] [ Element.text pRItem.pr.name ]
             , viewStatusRow pRItem
             ]
         , viewMergeButton global model pRItem
@@ -387,15 +389,19 @@ viewMergeButton global model prItem =
 
 viewStatusRow : PRItem -> Element msg
 viewStatusRow pRItem =
-    Element.wrappedRow
-        ([ Element.width Element.fill, Element.spacing 8 ] ++ UI.Font.caption)
+    UI.wrappedRow
+        [ [ Element.width Element.fill
+          , Element.spacing 8
+          ]
+        , UI.Font.caption
+        ]
         (List.intersperse
-            (Element.el [] (Element.text "·"))
+            (UI.el [] (Element.text "·"))
             ([ Commit.Build.viewBuildStatusString pRItem.build
              , PR.Participant.viewApprovedStatus pRItem.pr.participants
              ]
                 ++ (if pRItem.conflicts then
-                        [ Element.el [ Element.Font.color UI.Color.warning ] (Element.text "merge conflict") ]
+                        [ UI.el [ [ Element.Font.color UI.Color.warning ] ] (Element.text "merge conflict") ]
 
                     else
                         []
