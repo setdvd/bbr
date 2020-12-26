@@ -10,7 +10,7 @@ import Task exposing (Task)
 
 
 type alias MergeRule =
-    { minNumberOfBuildsToPass : Int
+    { allBuildPass : Bool
     , numberOfApproves : Int
     , openTasks : Bool
     }
@@ -18,7 +18,7 @@ type alias MergeRule =
 
 defaultMergeRule : MergeRule
 defaultMergeRule =
-    { minNumberOfBuildsToPass = 1
+    { allBuildPass = True
     , numberOfApproves = 1
     , openTasks = True
     }

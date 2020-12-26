@@ -49,9 +49,9 @@ skeleton =
             UI.el [ [ width fill ] ] none
     in
     UI.row
-        []
+        [ box, [ Element.spacing 16 ] ]
         [ UI.el [ UI.skeleton, UI.circle avatarSize ] none
-        , UI.column [ [ spacing 16, width <| fillPortion 2 ] ]
+        , UI.column [ [ spacing 8, width <| fillPortion 2 ] ]
             [ line
             , row
                 [ width fill ]

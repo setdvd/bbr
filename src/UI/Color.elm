@@ -1,6 +1,6 @@
 module UI.Color exposing (..)
 
-import Element exposing (rgb255)
+import Element exposing (rgb255, rgba255)
 
 
 primary : Element.Color
@@ -11,6 +11,11 @@ primary =
 primaryBackground : Element.Color
 primaryBackground =
     rgb255 230 240 253
+
+
+primaryBackgroundHover : Element.Color
+primaryBackgroundHover =
+    rgba255 205 224 251 1
 
 
 primaryShadow : Element.Color

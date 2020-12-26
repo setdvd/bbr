@@ -304,10 +304,8 @@ isPRItemPassMergeRule mergeRule pRItem =
         hasNeedApproves =
             PR.Participant.approveCount pRItem.pr.participants >= mergeRule.numberOfApproves
 
-        -- TODO count number of builds for PR
-        --      labels: P3
         hasBuilds =
-            if mergeRule.minNumberOfBuildsToPass > 0 then
+            if mergeRule.allBuildPass then
                 Commit.Build.isPass pRItem.build
 
             else
