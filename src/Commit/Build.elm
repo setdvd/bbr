@@ -33,7 +33,7 @@ type alias BuildInfo =
 
 type Build
     = Empty
-    | Started BuildInfo
+    | Started (List BuildInfo)
 
 
 type Status
@@ -85,14 +85,14 @@ decodeList =
 
 decodeListHelper : List BuildInfo -> Json.Decode.Decoder Build
 decodeListHelper builds =
-    -- TODO check for all build status not only the first one
-    --      labels: P3
-    case List.head builds of
-        Just x ->
-            Json.Decode.succeed <| Started x
+    Json.Decode.succeed
+        (case builds of
+            [] ->
+                Empty
 
-        Nothing ->
-            Json.Decode.succeed Empty
+            items ->
+                Started items
+        )
 
 
 fetch : Credentials -> String -> Task Http.Error Build
@@ -116,43 +116,51 @@ viewBuildStatusString build =
                     UI.Color.grey50
 
                 Started buildInfo ->
-                    case buildInfo.status of
-                        InProgress ->
-                            UI.Color.grey50
+                    if List.any (\info -> info.status == Failed) buildInfo then
+                        UI.Color.error
 
-                        Success ->
-                            UI.Color.green70
+                    else if List.all (\info -> info.status == Success) buildInfo then
+                        UI.Color.green70
 
-                        Failed ->
-                            UI.Color.error
-
-                        Stopped ->
-                            UI.Color.error
+                    else
+                        UI.Color.grey50
     in
     UI.el
         [ [ Element.Font.color color ] ]
         (Element.text buildString)
 
 
-statusToString : Build -> String
-statusToString build =
+transverse : Build -> Status
+transverse build =
     case build of
         Empty ->
-            "not started"
+            InProgress
 
-        Started buildInfo ->
-            case buildInfo.status of
-                InProgress ->
-                    "in progress"
+        Started buildInfos ->
+            if List.any (\info -> info.status == Failed) buildInfos then
+                Failed
 
-                Success ->
-                    "success"
+            else if List.all (\info -> info.status == Success) buildInfos then
+                Success
 
-                Failed ->
-                    "failed"
+            else
+                InProgress
 
-                Stopped ->
-                    "stopped"
+
+statusToString : Build -> String
+statusToString build =
+    case transverse build of
+        InProgress ->
+            "in progress"
+
+        Success ->
+            "success"
+
+        Failed ->
+            "failed"
+
+        Stopped ->
+            "stopped"
 
 
 viewStateIcon : Build -> UI.Attributes msg -> Element msg
@@ -168,31 +176,27 @@ viewStateIcon build attributes =
             UI.el []
                 (Element.text <| "Build " ++ statusToString build)
     in
-    case build of
-        Empty ->
-            container (UI.Icons.blur UI.Color.grey50)
+    container
+        (case transverse build of
+            InProgress ->
+                UI.Icons.clock UI.Color.grey50
 
-        Started buildInfo ->
-            container <|
-                case buildInfo.status of
-                    InProgress ->
-                        UI.Icons.clock UI.Color.grey50
+            Success ->
+                UI.Icons.done UI.Color.success
 
-                    Success ->
-                        UI.Icons.done UI.Color.success
+            Failed ->
+                UI.Icons.report UI.Color.error
 
-                    Failed ->
-                        UI.Icons.report UI.Color.error
-
-                    Stopped ->
-                        UI.Icons.report UI.Color.error
+            Stopped ->
+                UI.Icons.report UI.Color.error
+        )
 
 
 isFailed : Build -> Bool
 isFailed build =
-    case build of
-        Started info ->
-            info.status == Failed
+    case transverse build of
+        Failed ->
+            True
 
         _ ->
             False
@@ -202,7 +206,7 @@ isPass : Build -> Bool
 isPass build =
     case build of
         Started info ->
-            info.status == Success
+            List.all (\i -> i.status == Success) info
 
         _ ->
             False
