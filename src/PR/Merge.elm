@@ -9,9 +9,24 @@ import PR exposing (PR)
 import Task exposing (Task)
 
 
+type alias MergeRule =
+    { minNumberOfBuildsToPass : Int
+    , numberOfApproves : Int
+    , openTasks : Bool
+    }
+
+
+defaultMergeRule : MergeRule
+defaultMergeRule =
+    { minNumberOfBuildsToPass = 1
+    , numberOfApproves = 1
+    , openTasks = True
+    }
+
+
 defaultMergeMessage : PR -> String
 defaultMergeMessage pr =
-    "Merged in " ++ pr.name ++ "(pull request #" ++ String.fromInt 7756 ++ ")"
+    "Merged in " ++ pr.name ++ "(pull request #" ++ String.fromInt pr.id ++ ")"
 
 
 type Strategy

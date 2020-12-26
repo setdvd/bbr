@@ -38,10 +38,6 @@ type alias PRItem =
     }
 
 
-
--- AutoMerge Bool | ReadyToMerge | Merging | Result Err ()
-
-
 type alias Model =
     { autoMerging : Set Int
     , prItems : ReloadableData.ReloadableData Http.Error (List PRItem)
@@ -315,8 +311,15 @@ isPRItemPassMergeRule mergeRule pRItem =
 
             else
                 True
+
+        tasks =
+            if mergeRule.openTasks then
+                pRItem.pr.openTaskCount == 0
+
+            else
+                True
     in
-    hasNeedApproves && hasBuilds && not pRItem.conflicts
+    hasNeedApproves && hasBuilds && not pRItem.conflicts && tasks
 
 
 viewItem : Global -> Model -> PRItem -> Element Msg
