@@ -383,7 +383,6 @@ viewMergeButton global model prItem =
 
 
 --  TODO handle self approve
---       milestone: v0.1
 
 
 viewStatusRow : PRItem -> Element msg
