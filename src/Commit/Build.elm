@@ -2,7 +2,8 @@ module Commit.Build exposing
     ( Build
     , Status(..)
     , fetch
-    , shouldNotify
+    , isNewFailed
+    , isPass
     , statusToString
     , viewBuildStatusString
     , viewStateIcon
@@ -11,8 +12,6 @@ module Commit.Build exposing
 import API
 import Credentials exposing (Credentials)
 import Element exposing (Element)
-import Element.Background
-import Element.Border
 import Element.Font
 import Http
 import Json.Decode
@@ -86,6 +85,8 @@ decodeList =
 
 decodeListHelper : List BuildInfo -> Json.Decode.Decoder Build
 decodeListHelper builds =
+    -- TODO check for all build status not only the first one
+    --      labels: P3
     case List.head builds of
         Just x ->
             Json.Decode.succeed <| Started x
@@ -186,34 +187,26 @@ viewStateIcon build attributes =
                         UI.Icons.report UI.Color.error
 
 
-shouldNotify : Build -> Build -> Bool
-shouldNotify old new =
-    let
-        helper : Status -> Bool
-        helper status =
-            case status of
-                InProgress ->
-                    False
+isFailed : Build -> Bool
+isFailed build =
+    case build of
+        Started info ->
+            info.status == Failed
 
-                Success ->
-                    True
-
-                Failed ->
-                    True
-
-                Stopped ->
-                    True
-    in
-    case ( old, new ) of
-        ( _, Empty ) ->
+        _ ->
             False
 
-        ( Empty, Started info ) ->
-            helper info.status
 
-        ( Started oldInfo, Started newInfo ) ->
-            if oldInfo.status == newInfo.status then
-                False
+isPass : Build -> Bool
+isPass build =
+    case build of
+        Started info ->
+            info.status == Success
 
-            else
-                helper newInfo.status
+        _ ->
+            False
+
+
+isNewFailed : ( Build, Build ) -> Bool
+isNewFailed ( old, new ) =
+    not (isFailed old) && isFailed new

@@ -68,6 +68,31 @@ button attr { label, onClick, icon } =
         }
 
 
+
+-- TODO add hover & focus and pressed states
+--      labels: P3,UI
+
+
+smallButton : UI.Attributes msg -> { label : Element msg, onClick : Maybe msg } -> Element msg
+smallButton attributes { label, onClick } =
+    Element.Input.button
+        (UI.concat
+            [ UI.Font.caption
+            , [ Element.Background.color UI.Color.primaryBackground
+              , Element.Font.color UI.Color.primary
+              , Element.paddingXY 12 10
+              , Element.spacing 10
+              , Element.Border.rounded 10
+              , UI.Font.w500
+              ]
+            ]
+            attributes
+        )
+        { onPress = onClick
+        , label = label
+        }
+
+
 text :
     List (List (Element.Attribute msg))
     ->

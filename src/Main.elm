@@ -6,14 +6,20 @@ import Credentials exposing (Credentials)
 import Element exposing (Element)
 import Element.Background
 import Element.Font
+import Global exposing (Global)
 import Html exposing (Html)
 import Json.Decode
 import Login
 import PR.Page
+import Settings
 import UI.Color
 
 
-port notification : { status : String } -> Cmd msg
+type alias Notification =
+    { title : String, description : String }
+
+
+port notification : Notification -> Cmd msg
 
 
 
@@ -22,7 +28,7 @@ port notification : { status : String } -> Cmd msg
 
 type Model
     = Login Login.Model
-    | PRs Credentials PR.Page.Model
+    | PRs Global PR.Page.Model
 
 
 versionDecoder : Json.Decode.Decoder String
@@ -37,6 +43,8 @@ init flag =
         credResult =
             Json.Decode.decodeValue (Json.Decode.field "cred" Credentials.decode) flag
 
+        -- TODO: Show version
+        --       milestone: v0.1
         version : Maybe String
         version =
             flag
@@ -46,10 +54,17 @@ init flag =
     case credResult of
         Ok cred ->
             let
-                ( m, c ) =
+                ( prModel, cmd ) =
                     PR.Page.init cred
+
+                global =
+                    Global Settings.defaultSettings cred
             in
-            ( PRs cred m, Cmd.map PRsMsg c )
+            ( PRs
+                global
+                prModel
+            , Cmd.map PRsMsg cmd
+            )
 
         Err _ ->
             ( Login (Login.init { username = "", password = "" }), Cmd.none )
@@ -79,19 +94,28 @@ update msg model =
 
                         cmd =
                             Cmd.map PRsMsg prsCMD
+
+                        global =
+                            Global Settings.defaultSettings cred
                     in
-                    ( PRs cred prsModel, Cmd.batch [ cmd, Credentials.save cred ] )
+                    ( PRs global prsModel, Cmd.batch [ cmd, Credentials.save cred ] )
 
                 ( newLoginModel, cmd, Nothing ) ->
                     ( Login newLoginModel, Cmd.map LoginMsg cmd )
 
-        ( PRsMsg prMsg, PRs cred prModel ) ->
-            case PR.Page.update cred prModel prMsg of
+        ( PRsMsg prMsg, PRs global prModel ) ->
+            case PR.Page.update global prModel prMsg of
                 ( newModel, newCmd, Nothing ) ->
-                    ( PRs cred newModel, Cmd.map PRsMsg newCmd )
+                    ( PRs global newModel, Cmd.map PRsMsg newCmd )
 
-                ( newModel, newCmd, Just (PR.Page.PRBuildStatusChangedFromTo pr from to) ) ->
-                    ( PRs cred newModel, Cmd.batch [ Cmd.map PRsMsg newCmd, notification { status = Commit.Build.statusToString to } ] )
+                ( newModel, newCmd, Just (PR.Page.PRItemUpdated info) ) ->
+                    let
+                        notificationList =
+                            info
+                                |> PR.Page.notification
+                                |> List.map notification
+                    in
+                    ( PRs global newModel, Cmd.batch ([ Cmd.map PRsMsg newCmd ] ++ notificationList) )
 
         ( _, _ ) ->
             ( model, Cmd.none )
@@ -115,8 +139,8 @@ view model =
             Login loginModel ->
                 Element.map LoginMsg <| Login.view loginModel
 
-            PRs _ prsModel ->
-                Element.map PRsMsg <| PR.Page.view prsModel
+            PRs global prsModel ->
+                Element.map PRsMsg <| PR.Page.view global prsModel
         )
 
 
@@ -132,3 +156,10 @@ main =
         , update = update
         , subscriptions = always Sub.none
         }
+
+
+
+---- BACKLOG ----
+--  TODO add decoding error reporting
+--       add sentry reporting on decode errors
+--       milestone: v0.1

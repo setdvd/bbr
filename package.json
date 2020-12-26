@@ -5,7 +5,8 @@
   "scripts": {
     "postinstall": "electron-builder install-app-deps",
     "elm": "elm-app start",
-    "start": "electron .",
+    "app": "electron .",
+    "start": "yarn elm & yarn app",
     "build": "PUBLIC_URL=./ elm-app build",
     "dist": "electron-builder --mac"
   },

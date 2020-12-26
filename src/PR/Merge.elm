@@ -38,6 +38,12 @@ strategyToString strategy =
             "fast_forward"
 
 
+
+--  TODO handle delayed merge response
+--       bb can response 204 with merge request id if merge takes to long to complete
+--       milestone: v0.2
+
+
 merge : Credentials -> PR -> Task Http.Error ()
 merge cred pr =
     API.post

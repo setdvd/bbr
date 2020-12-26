@@ -1,4 +1,4 @@
-module PR.Participant exposing (Participant, ParticipantRole, decode, viewApprovedStatus)
+module PR.Participant exposing (Participant, ParticipantRole, approveCount, decode, viewApprovedStatus)
 
 import Element exposing (Element)
 import Element.Font
@@ -35,7 +35,7 @@ participantRoleDecoder =
                 "REVIEWER" ->
                     Json.Decode.succeed Reviewer
 
-                "participant" ->
+                "PARTICIPANT" ->
                     Json.Decode.succeed Other
 
                 _ ->
@@ -44,13 +44,18 @@ participantRoleDecoder =
     Json.Decode.string |> Json.Decode.andThen get
 
 
+approveCount : List Participant -> Int
+approveCount participants =
+    participants
+        |> List.filter .approved
+        |> List.length
+
+
 viewApprovedStatus : List Participant -> Element msg
 viewApprovedStatus participants =
     let
         approvedCount =
-            participants
-                |> List.filter .approved
-                |> List.length
+            approveCount participants
 
         color =
             if approvedCount > 0 then

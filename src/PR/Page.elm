@@ -1,24 +1,32 @@
-module PR.Page exposing (External(..), Model, Msg, init, update, view)
+module PR.Page exposing (External(..), Model, Msg, init, notification, update, view)
 
 import Commit exposing (Commit)
-import Commit.Build exposing (Build, viewBuildStatusString)
+import Commit.Build exposing (Build)
 import Credentials exposing (Credentials)
+import Dict exposing (Dict)
 import Element exposing (Element)
 import Element.Font
+import Global exposing (Global)
 import Http
+import LazyLoadableData
 import List.Extra
 import Maybe.Extra
 import PR exposing (PR)
 import PR.DiffStat
-import PR.Participant exposing (viewApprovedStatus)
+import PR.Merge
+import PR.Participant exposing (Participant)
 import Process
-import ReloadableData exposing (ReloadableData(..))
+import ReloadableData
+import Set exposing (Set)
+import Settings exposing (Settings)
 import Task exposing (Task)
 import Task.Extra
 import UI
 import UI.Card
 import UI.Color
 import UI.Font
+import UI.Icons
+import UI.Input
 import UI.Layout
 
 
@@ -30,8 +38,15 @@ type alias PRItem =
     }
 
 
+
+-- AutoMerge Bool | ReadyToMerge | Merging | Result Err ()
+
+
 type alias Model =
-    ReloadableData Http.Error (List PRItem)
+    { autoMerging : Set Int
+    , prItems : ReloadableData.ReloadableData Http.Error (List PRItem)
+    , mergeStatus : Dict Int (LazyLoadableData.LazyLoadableData Http.Error ())
+    }
 
 
 fetch : Credentials -> Cmd Msg
@@ -76,13 +91,8 @@ fetch credentials =
         |> Task.attempt PRsFetched
 
 
-reFetchIntervalMS : Float
-reFetchIntervalMS =
-    1000 * 60 * 5
-
-
-diff : List PRItem -> List PRItem -> Maybe External
-diff pRItemsOld pRItemsNew =
+intersect : List PRItem -> List PRItem -> List ( PRItem, PRItem )
+intersect pRItemsOld pRItemsNew =
     pRItemsNew
         |> List.map
             (\new ->
@@ -90,75 +100,170 @@ diff pRItemsOld pRItemsNew =
                     |> Maybe.map (\old -> ( old, new ))
             )
         |> Maybe.Extra.values
-        |> List.head
-        |> Maybe.andThen
-            (\( old, new ) ->
-                if Commit.Build.shouldNotify old.build new.build then
-                    Just ( old, new )
-
-                else
-                    Nothing
-            )
-        |> Maybe.map (\( old, new ) -> PRBuildStatusChangedFromTo new.pr old.build new.build)
 
 
-requestReFetch : Cmd Msg
-requestReFetch =
-    reFetchIntervalMS
+filterAutoMerge : Settings -> Set Int -> List ( PRItem, PRItem ) -> ( List ( PRItem, PRItem ), List ( PRItem, PRItem ) )
+filterAutoMerge settings autoMerge list =
+    List.partition (\( _, new ) -> Set.member new.pr.id autoMerge && isPRItemPassMergeRule settings.mergeRule new) list
+
+
+filterReadyToMerge : Settings -> List ( PRItem, PRItem ) -> ( List ( PRItem, PRItem ), List ( PRItem, PRItem ) )
+filterReadyToMerge settings list =
+    List.partition (isReadyToMerge settings) list
+
+
+isReadyToMerge : Settings -> ( PRItem, PRItem ) -> Bool
+isReadyToMerge settings ( old, new ) =
+    let
+        ready =
+            isPRItemPassMergeRule settings.mergeRule
+    in
+    not (ready old) && ready new
+
+
+filterConflicts : List ( PRItem, PRItem ) -> ( List ( PRItem, PRItem ), List ( PRItem, PRItem ) )
+filterConflicts list =
+    List.partition (\( old, new ) -> not old.conflicts && new.conflicts) list
+
+
+filterBuildFailed : List ( PRItem, PRItem ) -> ( List ( PRItem, PRItem ), List ( PRItem, PRItem ) )
+filterBuildFailed list =
+    List.partition (Tuple.mapBoth .build .build >> Commit.Build.isNewFailed) list
+
+
+requestReFetch : Settings -> Cmd Msg
+requestReFetch settings =
+    settings.myPRPollInterval
+        |> toFloat
         |> Process.sleep
         |> Task.perform (always RequestToReFetch)
 
 
 init : Credentials -> ( Model, Cmd Msg )
 init credentials =
-    ( ReloadableData.Loading, fetch credentials )
+    ( Model Set.empty ReloadableData.Loading Dict.empty, fetch credentials )
 
 
 type Msg
     = PRsFetched (Result Http.Error (List PRItem))
     | RequestToReFetch
+    | MergeClick PRItem
+    | MergeResult PRItem (Result Http.Error ())
+    | AutoMergeClick PRItem
+    | CancelAutoMergeClick PRItem
 
 
 type External
-    = PRBuildStatusChangedFromTo PR Build Build
+    = PRItemUpdated UpdateInfo
 
 
-update : Credentials -> Model -> Msg -> ( Model, Cmd Msg, Maybe External )
-update credentials model msg =
+type alias UpdateInfo =
+    { readyToMerge : List ( PRItem, PRItem )
+    , conflicts : List ( PRItem, PRItem )
+    , buildFailed : List ( PRItem, PRItem )
+    }
+
+
+notification : UpdateInfo -> List { title : String, description : String }
+notification updateInfo =
+    let
+        readyToMerge =
+            List.map (\( _, new ) -> { title = new.pr.name, description = "is ready to merge" }) updateInfo.readyToMerge
+
+        conflict =
+            List.map (\( _, new ) -> { title = new.pr.name, description = "has conflicts" }) updateInfo.conflicts
+
+        buildFailed =
+            List.map (\( _, new ) -> { title = new.pr.name, description = "build failed" }) updateInfo.buildFailed
+    in
+    readyToMerge ++ conflict ++ buildFailed
+
+
+update : Global -> Model -> Msg -> ( Model, Cmd Msg, Maybe External )
+update global model msg =
     case msg of
         PRsFetched result ->
             let
                 data =
-                    ReloadableData.fromResult model result
+                    ReloadableData.fromResult model.prItems result
 
                 old =
-                    ReloadableData.withDefault [] model
+                    ReloadableData.withDefault [] model.prItems
 
                 new =
                     ReloadableData.withDefault [] data
+
+                diff : List ( PRItem, PRItem )
+                diff =
+                    intersect old new
+
+                ( readyToMerge, other ) =
+                    filterReadyToMerge global.settings diff
+
+                ( buildFailed, other2 ) =
+                    filterBuildFailed other
+
+                ( conflicts, _ ) =
+                    filterConflicts other2
             in
-            ( data, requestReFetch, diff old new )
+            ( { model | prItems = data }
+            , requestReFetch global.settings
+            , Just <|
+                PRItemUpdated
+                    { readyToMerge = readyToMerge
+                    , conflicts = conflicts
+                    , buildFailed = buildFailed
+                    }
+            )
 
         RequestToReFetch ->
-            ( ReloadableData.toLoading model, fetch credentials, Nothing )
+            ( { model | prItems = ReloadableData.toLoading model.prItems }, fetch global.credentials, Nothing )
+
+        MergeClick pRItem ->
+            let
+                merge =
+                    Dict.insert pRItem.pr.id LazyLoadableData.Loading model.mergeStatus
+
+                cmd =
+                    pRItem.pr
+                        |> PR.Merge.merge global.credentials
+                        |> Task.attempt (MergeResult pRItem)
+            in
+            ( { model | mergeStatus = merge }, cmd, Nothing )
+
+        AutoMergeClick pRItem ->
+            ( { model | autoMerging = Set.insert pRItem.pr.id model.autoMerging }, Cmd.none, Nothing )
+
+        CancelAutoMergeClick pRItem ->
+            ( { model | autoMerging = Set.remove pRItem.pr.id model.autoMerging }, Cmd.none, Nothing )
+
+        MergeResult prItem result ->
+            ( { model
+                | mergeStatus =
+                    Dict.insert prItem.pr.id (LazyLoadableData.Loaded result) model.mergeStatus
+              }
+            , Cmd.none
+            , Nothing
+            )
 
 
-view : Model -> Element Msg
-view model =
+view : Global -> Model -> Element Msg
+view global model =
     let
         content =
-            case model of
-                Loading ->
+            case model.prItems of
+                ReloadableData.Loading ->
                     Element.column [ Element.width Element.fill ]
                         (List.range 1 3
                             |> List.map (always UI.Card.skeleton)
                         )
 
-                Loaded list ->
-                    viewPRItems list
+                ReloadableData.Loaded list ->
+                    viewPRItems global model list
 
-                -- TODO: [P3] [S] use generic error
-                Failed e ->
+                -- TODO add generic bb error handling
+                --      labels: P1
+                ReloadableData.Failed e ->
                     case e of
                         Http.BadUrl string ->
                             Element.text "bad url"
@@ -175,11 +280,11 @@ view model =
                         Http.BadBody string ->
                             Element.text string
 
-                Reloading list ->
-                    viewPRItems list
+                ReloadableData.Reloading list ->
+                    viewPRItems global model list
 
-                ReloadingFailed _ list ->
-                    viewPRItems list
+                ReloadableData.ReloadingFailed _ list ->
+                    viewPRItems global model list
     in
     UI.Layout.page
         []
@@ -188,38 +293,129 @@ view model =
         ]
 
 
-viewPRItems : List PRItem -> Element Msg
-viewPRItems pRItems =
+viewPRItems : Global -> Model -> List PRItem -> Element Msg
+viewPRItems global model pRItems =
     Element.column
         [ Element.width Element.fill
         ]
-        (List.map viewItem pRItems)
+        (List.map (viewItem global model) pRItems)
 
 
-viewItem : PRItem -> Element Msg
-viewItem pRItem =
+isPRItemPassMergeRule : PR.Merge.MergeRule -> PRItem -> Bool
+isPRItemPassMergeRule mergeRule pRItem =
+    let
+        hasNeedApproves =
+            PR.Participant.approveCount pRItem.pr.participants >= mergeRule.numberOfApproves
+
+        -- TODO count number of builds for PR
+        --      labels: P3
+        hasBuilds =
+            if mergeRule.minNumberOfBuildsToPass > 0 then
+                Commit.Build.isPass pRItem.build
+
+            else
+                True
+    in
+    hasNeedApproves && hasBuilds && not pRItem.conflicts
+
+
+viewItem : Global -> Model -> PRItem -> Element Msg
+viewItem global model pRItem =
     UI.Card.box
         []
-        --[ UI.Card.avatar [] (Commit.Build.viewStateIcon pRItem.build [ UI.center ])
         [ Element.column
             [ Element.width Element.fill
             , Element.spacing 8
             ]
             [ Element.paragraph [] [ Element.text pRItem.pr.name ]
-            , Element.wrappedRow
-                ([ Element.width Element.fill, Element.spacing 8 ] ++ UI.Font.caption)
-                (List.intersperse
-                    (Element.el [] (Element.text "·"))
-                    ([ viewBuildStatusString pRItem.build
-                     , viewApprovedStatus pRItem.pr.participants
-                     ]
-                        ++ (if pRItem.conflicts then
-                                [ Element.el [ Element.Font.color UI.Color.warning ] (Element.text "merge conflict") ]
-
-                            else
-                                []
-                           )
-                    )
-                )
+            , viewStatusRow pRItem
             ]
+        , viewMergeButton global model pRItem
         ]
+
+
+viewMergeButton : Global -> Model -> PRItem -> Element Msg
+viewMergeButton global model prItem =
+    let
+        button =
+            UI.Input.smallButton []
+
+        state =
+            calculateMergeState global model prItem
+    in
+    case state of
+        NotReady ->
+            Element.none
+
+        ReadyToMerge lazyLoadableData ->
+            case lazyLoadableData of
+                LazyLoadableData.NotAsked ->
+                    button { label = Element.text "Merge", onClick = Just <| MergeClick prItem }
+
+                LazyLoadableData.Loading ->
+                    button { label = UI.Icons.icon 12 (UI.Icons.circularProgress UI.Color.white), onClick = Nothing }
+
+                LazyLoadableData.Loaded result ->
+                    case result of
+                        Ok () ->
+                            button { label = Element.text "Merged", onClick = Nothing }
+
+                        Err error ->
+                            case error of
+                                Http.BadUrl string ->
+                                    Element.text "bad url"
+
+                                Http.Timeout ->
+                                    Element.text "timeout"
+
+                                Http.NetworkError ->
+                                    Element.text "network down"
+
+                                Http.BadStatus int ->
+                                    Element.text <| "BE down " ++ String.fromInt int
+
+                                Http.BadBody string ->
+                                    Element.text <| "Bad body: " ++ string
+
+
+
+--  TODO handle self approve
+--       milestone: v0.1
+
+
+viewStatusRow : PRItem -> Element msg
+viewStatusRow pRItem =
+    Element.wrappedRow
+        ([ Element.width Element.fill, Element.spacing 8 ] ++ UI.Font.caption)
+        (List.intersperse
+            (Element.el [] (Element.text "·"))
+            ([ Commit.Build.viewBuildStatusString pRItem.build
+             , PR.Participant.viewApprovedStatus pRItem.pr.participants
+             ]
+                ++ (if pRItem.conflicts then
+                        [ Element.el [ Element.Font.color UI.Color.warning ] (Element.text "merge conflict") ]
+
+                    else
+                        []
+                   )
+            )
+        )
+
+
+type MergeButtonState
+    = NotReady
+    | ReadyToMerge (LazyLoadableData.LazyLoadableData Http.Error ())
+
+
+calculateMergeState : Global -> Model -> PRItem -> MergeButtonState
+calculateMergeState { settings } { mergeStatus } pRItem =
+    let
+        loadableState =
+            Dict.get pRItem.pr.id mergeStatus
+                |> Maybe.withDefault LazyLoadableData.NotAsked
+    in
+    if not (isPRItemPassMergeRule settings.mergeRule pRItem) then
+        NotReady
+
+    else
+        ReadyToMerge loadableState
