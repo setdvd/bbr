@@ -5,8 +5,8 @@ module Commit.Build exposing
     , isNewFailed
     , isPass
     , statusToString
+    , transverse
     , viewBuildStatusString
-    , viewStateIcon
     )
 
 import API
@@ -15,11 +15,10 @@ import Element exposing (Element)
 import Element.Font
 import Http
 import Json.Decode
-import Json.Decode.Pipeline exposing (required, requiredAt)
+import Json.Decode.Pipeline exposing (required)
 import Task exposing (Task)
 import UI
 import UI.Color
-import UI.Icons
 
 
 type alias BuildInfo =
@@ -161,35 +160,6 @@ statusToString build =
 
         Stopped ->
             "stopped"
-
-
-viewStateIcon : Build -> UI.Attributes msg -> Element msg
-viewStateIcon build attributes =
-    let
-        container =
-            UI.el
-                attributes
-
-        -- TODO: show status as Icons + tool tip on hover
-        --      labels: ui
-        toolTip =
-            UI.el []
-                (Element.text <| "Build " ++ statusToString build)
-    in
-    container
-        (case transverse build of
-            InProgress ->
-                UI.Icons.clock UI.Color.grey50
-
-            Success ->
-                UI.Icons.done UI.Color.success
-
-            Failed ->
-                UI.Icons.report UI.Color.error
-
-            Stopped ->
-                UI.Icons.report UI.Color.error
-        )
 
 
 isFailed : Build -> Bool

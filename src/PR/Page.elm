@@ -1,10 +1,11 @@
 module PR.Page exposing (External(..), Model, Msg, init, notification, update, view)
 
 import Commit exposing (Commit)
-import Commit.Build exposing (Build)
+import Commit.Build exposing (Build, Status(..))
 import Credentials exposing (Credentials)
 import Dict exposing (Dict)
 import Element exposing (Element)
+import Element.Events
 import Element.Font
 import Global exposing (Global)
 import Http
@@ -42,7 +43,14 @@ type alias Model =
     { autoMerging : Set Int
     , prItems : ReloadableData.ReloadableData Http.Error (List PRItem)
     , mergeStatus : Dict Int (LazyLoadableData.LazyLoadableData Http.Error ())
+    , hovered : Dict Int StatusIcon
     }
+
+
+type StatusIcon
+    = BuildStatus
+    | ApproveStatus
+    | ConflictStatus
 
 
 fetch : Credentials -> Cmd Msg
@@ -137,7 +145,7 @@ requestReFetch settings =
 
 init : Credentials -> ( Model, Cmd Msg )
 init credentials =
-    ( Model Set.empty ReloadableData.Loading Dict.empty, fetch credentials )
+    ( Model Set.empty ReloadableData.Loading Dict.empty Dict.empty, fetch credentials )
 
 
 type Msg
@@ -147,6 +155,8 @@ type Msg
     | MergeResult PRItem (Result Http.Error ())
     | AutoMergeClick PRItem
     | CancelAutoMergeClick PRItem
+    | StatusIconMouseEntered StatusIcon PRItem
+    | StatusIconMouseLeave StatusIcon PRItem
 
 
 type External
@@ -242,6 +252,12 @@ update global model msg =
             , Nothing
             )
 
+        StatusIconMouseEntered icon pRItem ->
+            ( { model | hovered = Dict.insert pRItem.pr.id icon model.hovered }, Cmd.none, Nothing )
+
+        StatusIconMouseLeave _ pRItem ->
+            ( { model | hovered = Dict.remove pRItem.pr.id model.hovered }, Cmd.none, Nothing )
+
 
 view : Global -> Model -> Element Msg
 view global model =
@@ -321,6 +337,58 @@ isPRItemPassMergeRule mergeRule pRItem =
     hasNeedApproves && hasBuilds && not pRItem.conflicts && tasks
 
 
+statusIcon : Element msg -> Element msg
+statusIcon =
+    UI.Icons.icon 14
+
+
+viewBuildStateIcon : Model -> PRItem -> Element Msg
+viewBuildStateIcon model prItem =
+    let
+        build =
+            prItem.build
+
+        color =
+            case Commit.Build.transverse build of
+                InProgress ->
+                    UI.Color.grey50
+
+                Success ->
+                    UI.Color.green70
+
+                Failed ->
+                    UI.Color.error
+
+                Stopped ->
+                    UI.Color.error
+
+        icon =
+            UI.Icons.tools color
+    in
+    viewStatusIcon model
+        prItem
+        { status = BuildStatus
+        , icon = icon
+        , tooltipText = "build " ++ Commit.Build.statusToString build
+        }
+
+
+viewApproveStateIcon : Model -> PRItem -> Element Msg
+viewApproveStateIcon model prItem =
+    let
+        color =
+            if PR.Participant.approveCount prItem.pr.participants > 0 then
+                UI.Color.green70
+
+            else
+                UI.Color.grey50
+
+        icon =
+            UI.Icons.review color
+    in
+    viewStatusIcon model prItem { status = ApproveStatus, icon = icon, tooltipText = PR.Participant.toString prItem.pr.participants }
+
+
 viewItem : Global -> Model -> PRItem -> Element Msg
 viewItem global model pRItem =
     UI.row
@@ -331,10 +399,55 @@ viewItem global model pRItem =
               ]
             ]
             [ UI.paragraph [] [ Element.text pRItem.pr.name ]
-            , viewStatusRow pRItem
+            , viewStatusRow model pRItem
             ]
         , viewMergeButton global model pRItem
         ]
+
+
+viewStatusIcon : Model -> PRItem -> { status : StatusIcon, icon : Element Msg, tooltipText : String } -> Element Msg
+viewStatusIcon model prItem { status, icon, tooltipText } =
+    let
+        hovered =
+            Dict.get prItem.pr.id model.hovered
+                |> Maybe.map (\s -> s == status)
+                |> Maybe.withDefault False
+
+        toolTip : Element Msg
+        toolTip =
+            if hovered then
+                UI.el [ [ Element.centerX, Element.moveUp 4 ] ]
+                    (UI.el
+                        [ UI.tooltip ]
+                        (UI.text tooltipText)
+                    )
+
+            else
+                Element.none
+    in
+    UI.el
+        [ [ Element.above toolTip
+          , Element.Events.onMouseEnter (StatusIconMouseEntered status prItem)
+          , Element.Events.onMouseLeave (StatusIconMouseLeave status prItem)
+          ]
+        ]
+        (statusIcon icon)
+
+
+viewConflictStatusIcon : Model -> PRItem -> Element Msg
+viewConflictStatusIcon model prItem =
+    let
+        ( color, txt ) =
+            if prItem.conflicts then
+                ( UI.Color.error, "pr has conflicts" )
+
+            else
+                ( UI.Color.green70, "no conflicts" )
+
+        icon =
+            UI.Icons.conflict color
+    in
+    viewStatusIcon model prItem { status = ConflictStatus, icon = icon, tooltipText = txt }
 
 
 viewMergeButton : Global -> Model -> PRItem -> Element Msg
@@ -385,27 +498,17 @@ viewMergeButton global model prItem =
 --  TODO handle self approve
 
 
-viewStatusRow : PRItem -> Element msg
-viewStatusRow pRItem =
+viewStatusRow : Model -> PRItem -> Element Msg
+viewStatusRow model pRItem =
     UI.wrappedRow
         [ [ Element.width Element.fill
           , Element.spacing 8
           ]
-        , UI.Font.caption
         ]
-        (List.intersperse
-            (UI.el [] (Element.text "·"))
-            ([ Commit.Build.viewBuildStatusString pRItem.build
-             , PR.Participant.viewApprovedStatus pRItem.pr.participants
-             ]
-                ++ (if pRItem.conflicts then
-                        [ UI.el [ [ Element.Font.color UI.Color.warning ] ] (Element.text "merge conflict") ]
-
-                    else
-                        []
-                   )
-            )
-        )
+        [ viewBuildStateIcon model pRItem
+        , viewApproveStateIcon model pRItem
+        , viewConflictStatusIcon model pRItem
+        ]
 
 
 type MergeButtonState

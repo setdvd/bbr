@@ -5,7 +5,6 @@ import Element.Background
 import Element.Border
 import Html.Attributes
 import UI.Color
-import UI.Font
 
 
 type alias Attributes msg =
@@ -133,8 +132,13 @@ center =
 tooltip : List (Attribute msg)
 tooltip =
     concat
-        [ [ Element.Background.color UI.Color.primaryBackground
-          , Element.Border.rounded 12
+        [ container
+        , [ Element.padding 8
+          , Element.Border.shadow
+                { offset = ( 0, 5 )
+                , size = 0
+                , blur = 10
+                , color = UI.Color.grey5
+                }
           ]
-        , UI.Font.caption
         ]

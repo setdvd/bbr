@@ -1,4 +1,4 @@
-module PR.Participant exposing (Participant, ParticipantRole, approveCount, decode, viewApprovedStatus)
+module PR.Participant exposing (Participant, ParticipantRole, approveCount, decode, toString, viewApprovedStatus)
 
 import Element exposing (Element)
 import Element.Font
@@ -67,14 +67,17 @@ viewApprovedStatus participants =
     in
     UI.el
         [ [ Element.Font.color color ] ]
-        (UI.text <|
-            case approvedCount of
-                0 ->
-                    "not approved yet"
+        (UI.text (toString participants))
 
-                1 ->
-                    "single approve"
 
-                x ->
-                    String.fromInt x ++ " approves"
-        )
+toString : List Participant -> String
+toString participants =
+    case approveCount participants of
+        0 ->
+            "not approved yet"
+
+        1 ->
+            "single approve"
+
+        n ->
+            String.fromInt n ++ " approves"
