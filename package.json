@@ -14,13 +14,17 @@
   "devDependencies": {
     "create-elm-app": "^5.22.0",
     "electron": "^11.0.3",
-    "electron-builder": "^22.9.1"
+    "electron-builder": "^22.9.1",
+    "electron-builder-notarize": "^1.2.0"
   },
   "build": {
     "appId": "com.github.setdvd.bbr",
     "productName": "BBR",
+    "afterSign": "electron-builder-notarize",
     "mac": {
-      "category": "public.app-category.developer-tools"
+      "category": "public.app-category.developer-tools",
+      "hardenedRuntime": true,
+      "entitlements": "./entitlements.mac.plist"
     },
     "dmg": {
       "icon": false

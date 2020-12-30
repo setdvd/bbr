@@ -109,9 +109,6 @@ bower_components
 # node-waf configuration
 .lock-wscript
 
-# Compiled binary addons (https://nodejs.org/api/addons.html)
-build/Release
-
 # Dependency directories
 node_modules/
 jspm_packages/
@@ -195,5 +192,3 @@ dist
 elm-stuff
 # elm-repl generated files
 repl-temp-*
-
-/build/static/
