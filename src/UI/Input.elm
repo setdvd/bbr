@@ -69,6 +69,26 @@ button attr { label, onClick, icon } =
         }
 
 
+iconButton : UI.Attributes msg -> { icon : Element msg, onClick : Maybe msg } -> Element msg
+iconButton attributes { onClick, icon } =
+    let
+        style =
+            [ Element.mouseDown
+                [ Element.Background.color UI.Color.primaryBackgroundHover ]
+            , Element.focused []
+            ]
+
+        s =
+            24
+
+        iconEl =
+            UI.Icons.icon s icon
+    in
+    Element.Input.button
+        (style ++ UI.circle s ++ List.concat attributes)
+        { onPress = onClick, label = iconEl }
+
+
 smallButton : UI.Attributes msg -> { label : Element msg, onClick : Maybe msg } -> Element msg
 smallButton attributes { label, onClick } =
     Element.Input.button

@@ -157,6 +157,7 @@ type Msg
     | CancelAutoMergeClick PRItem
     | StatusIconMouseEntered StatusIcon PRItem
     | StatusIconMouseLeave StatusIcon PRItem
+    | RefreshClick
 
 
 type External
@@ -258,6 +259,13 @@ update global model msg =
         StatusIconMouseLeave _ pRItem ->
             ( { model | hovered = Dict.remove pRItem.pr.id model.hovered }, Cmd.none, Nothing )
 
+        RefreshClick ->
+            let
+                prItems =
+                    ReloadableData.toLoading model.prItems
+            in
+            ( { model | prItems = prItems }, fetch global.credentials, Nothing )
+
 
 view : Global -> Model -> Element Msg
 view global model =
@@ -300,9 +308,41 @@ view global model =
     in
     UI.Layout.page
         []
-        [ UI.Layout.header [] "PRs List"
+        [ UI.row [ [ Element.width Element.fill ] ]
+            [ UI.Layout.header [] "PRs List"
+            , viewReloadingButton model
+            ]
         , UI.el [ UI.container ] content
         ]
+
+
+viewReloadingButton : Model -> Element Msg
+viewReloadingButton model =
+    let
+        isLoading =
+            ReloadableData.isLoading model.prItems
+
+        onClick =
+            if isLoading then
+                Nothing
+
+            else
+                Just RefreshClick
+
+        style =
+            [ Element.alignRight ]
+
+        disabled =
+            if isLoading then
+                [ Element.alpha 0.3 ]
+
+            else
+                []
+    in
+    UI.Input.iconButton [ style, disabled ]
+        { onClick = onClick
+        , icon = UI.Icons.refresh UI.Color.black
+        }
 
 
 viewPRItems : Global -> Model -> List PRItem -> Element Msg

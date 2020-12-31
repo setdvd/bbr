@@ -9,6 +9,25 @@ type ReloadableData e t
     | ReloadingFailed e t
 
 
+isLoading : ReloadableData e t -> Bool
+isLoading reloadableData =
+    case reloadableData of
+        Loading ->
+            True
+
+        Loaded _ ->
+            False
+
+        Failed _ ->
+            False
+
+        Reloading _ ->
+            True
+
+        ReloadingFailed _ _ ->
+            False
+
+
 fromResult : ReloadableData e x -> Result e x -> ReloadableData e x
 fromResult reloadableData result =
     case ( reloadableData, result ) of
