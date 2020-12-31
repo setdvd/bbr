@@ -1,7 +1,7 @@
 {
   "name": "bbr",
   "description": "UI for Bitbucket.com",
-  "version": "0.0.40",
+  "version": "0.0.46",
   "scripts": {
     "postinstall": "electron-builder install-app-deps",
     "elm": "elm-app start",
