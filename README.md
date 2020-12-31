@@ -8,4 +8,4 @@ New ui for Bitbucket to increase day to day developer productivity during PR cre
 
 * Got notification when your code has conflicts or build failed
 * Merge PR from the app without loading Bitbucket heavy ui
-* Auto merge PR when all condition are met (# of build, # of approves, not conflicts or open tasks) 
+* Auto merge PR when all condition are met (# of successful builds, # of approves, no conflicts or open tasks) 
