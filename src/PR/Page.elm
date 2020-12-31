@@ -332,16 +332,26 @@ viewReloadingButton model =
         style =
             [ Element.alignRight ]
 
-        disabled =
-            if isLoading then
-                [ Element.alpha 0.3 ]
+        ( stateAttr, color ) =
+            case model.prItems of
+                ReloadableData.Loading ->
+                    ( [ Element.alpha 0.3 ], UI.Color.black )
 
-            else
-                []
+                ReloadableData.Loaded _ ->
+                    ( [], UI.Color.black )
+
+                ReloadableData.Failed _ ->
+                    ( [], UI.Color.error )
+
+                ReloadableData.Reloading _ ->
+                    ( [ Element.alpha 0.3 ], UI.Color.black )
+
+                ReloadableData.ReloadingFailed _ _ ->
+                    ( [], UI.Color.error )
     in
-    UI.Input.iconButton [ style, disabled ]
+    UI.Input.iconButton [ style, stateAttr ]
         { onClick = onClick
-        , icon = UI.Icons.refresh UI.Color.black
+        , icon = UI.Icons.refresh color
         }
 
 
