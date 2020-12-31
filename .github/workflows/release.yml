@@ -73,9 +73,6 @@ jobs:
 
       - name: Build/release Electron app
         uses: samuelmeuli/action-electron-builder@v1
-        env:
-          API_KEY_ID: ${{ secrets.api_key_id }}
-          API_KEY_ISSUER_ID: ${{ secrets.api_key_issuer_id }}
         with:
           # GitHub token, automatically provided to the action
           # (No need to define this secret in the repo settings)
@@ -85,6 +82,9 @@ jobs:
 
           mac_certs: ${{ secrets.mac_certs }}
           mac_certs_password: ${{ secrets.mac_certs_password }}
+        env:
+          API_KEY_ID: ${{ secrets.api_key_id }}
+          API_KEY_ISSUER_ID: ${{ secrets.api_key_issuer_id }}
 
   release-draft:
     runs-on: ubuntu-latest

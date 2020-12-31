@@ -27,7 +27,8 @@
       "entitlements": "./entitlements.mac.plist"
     },
     "dmg": {
-      "icon": false
+      "icon": false,
+      "artifactName": "BBR.dmg"
     },
     "files": [
       "**/*"
