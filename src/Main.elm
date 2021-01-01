@@ -179,10 +179,3 @@ main =
         , update = update
         , subscriptions = always Sub.none
         }
-
-
-
----- BACKLOG ----
---  TODO add decoding error reporting
---       add sentry reporting on decode errors
---       milestone: v0.1
