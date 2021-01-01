@@ -12,7 +12,9 @@ import Json.Decode
 import Login
 import PR.Page
 import Settings
+import UI
 import UI.Color
+import UI.Font
 
 
 type alias Notification =
@@ -27,7 +29,7 @@ port notification : Notification -> Cmd msg
 
 
 type Model
-    = Login Login.Model
+    = Login String Login.Model
     | PRs Global PR.Page.Model
 
 
@@ -43,13 +45,10 @@ init flag =
         credResult =
             Json.Decode.decodeValue (Json.Decode.field "cred" Credentials.decode) flag
 
-        -- TODO: Show version
-        --       milestone: v0.1
-        version : Maybe String
         version =
             flag
                 |> Json.Decode.decodeValue versionDecoder
-                |> Result.toMaybe
+                |> Result.withDefault ""
     in
     case credResult of
         Ok cred ->
@@ -58,7 +57,10 @@ init flag =
                     PR.Page.init cred
 
                 global =
-                    Global Settings.defaultSettings cred
+                    { settings = Settings.defaultSettings
+                    , credentials = cred
+                    , version = version
+                    }
             in
             ( PRs
                 global
@@ -67,7 +69,7 @@ init flag =
             )
 
         Err _ ->
-            ( Login (Login.init { username = "", password = "" }), Cmd.none )
+            ( Login version (Login.init { username = "", password = "" }), Cmd.none )
 
 
 
@@ -79,10 +81,24 @@ type Msg
     | PRsMsg PR.Page.Msg
 
 
+viewVersion : String -> Element Msg
+viewVersion version =
+    UI.fixed <|
+        UI.el
+            [ UI.Font.caption
+            , [ Element.alignBottom
+              , Element.alignRight
+              , Element.padding 8
+              , Element.spacing 4
+              ]
+            ]
+            (UI.text <| "v" ++ version)
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case ( msg, model ) of
-        ( LoginMsg loginMsg, Login loginModel ) ->
+        ( LoginMsg loginMsg, Login version loginModel ) ->
             case Login.update loginModel loginMsg of
                 ( _, _, Just (Login.LoggedIn data) ) ->
                     let
@@ -96,12 +112,15 @@ update msg model =
                             Cmd.map PRsMsg prsCMD
 
                         global =
-                            Global Settings.defaultSettings cred
+                            { settings = Settings.defaultSettings
+                            , credentials = cred
+                            , version = version
+                            }
                     in
                     ( PRs global prsModel, Cmd.batch [ cmd, Credentials.save cred ] )
 
                 ( newLoginModel, cmd, Nothing ) ->
-                    ( Login newLoginModel, Cmd.map LoginMsg cmd )
+                    ( Login version newLoginModel, Cmd.map LoginMsg cmd )
 
         ( PRsMsg prMsg, PRs global prModel ) ->
             case PR.Page.update global prModel prMsg of
@@ -127,6 +146,10 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
+    let
+        container =
+            UI.column [ UI.fillWH ]
+    in
     Element.layout
         [ Element.Font.size 14
         , Element.Font.color UI.Color.black
@@ -136,11 +159,11 @@ view model =
         , Element.width Element.fill
         ]
         (case model of
-            Login loginModel ->
-                Element.map LoginMsg <| Login.view loginModel
+            Login version loginModel ->
+                container [ Element.map LoginMsg <| Login.view loginModel, viewVersion version ]
 
             PRs global prsModel ->
-                Element.map PRsMsg <| PR.Page.view global prsModel
+                container [ Element.map PRsMsg <| PR.Page.view global prsModel, viewVersion global.version ]
         )
 
 

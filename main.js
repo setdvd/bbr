@@ -35,7 +35,7 @@ function createWindow() {
         mainWindow.loadURL(path.join('file://', process.resourcesPath, `/build/index.html?v=${version}`));
     } else {
         mainWindow.webContents.openDevTools();
-        mainWindow.loadURL('http://localhost:3000');
+        mainWindow.loadURL(`http://localhost:3000?v=${version}`);
     }
 
     // Emitted when the window is closed.
