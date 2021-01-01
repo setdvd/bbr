@@ -7,6 +7,7 @@ import Dict exposing (Dict)
 import Element exposing (Element)
 import Element.Events
 import Element.Font
+import Element.Input
 import Global exposing (Global)
 import Http
 import LazyLoadableData
@@ -204,17 +205,25 @@ update global model msg =
                 diff =
                     intersect old new
 
-                ( readyToMerge, other ) =
-                    filterReadyToMerge global.settings diff
+                ( forAutoMerge, other ) =
+                    filterAutoMerge global.settings model.autoMerging diff
 
-                ( buildFailed, other2 ) =
-                    filterBuildFailed other
+                cmds =
+                    forAutoMerge
+                        |> List.map (\( _, newPrForAutoMerge ) -> MergeClick newPrForAutoMerge)
+                        |> List.map (\mergeMsg -> Process.sleep 0 |> Task.perform (always mergeMsg))
+
+                ( readyToMerge, other2 ) =
+                    filterReadyToMerge global.settings other
+
+                ( buildFailed, other3 ) =
+                    filterBuildFailed other2
 
                 ( conflicts, _ ) =
-                    filterConflicts other2
+                    filterConflicts other3
             in
             ( { model | prItems = data }
-            , requestReFetch global.settings
+            , Cmd.batch (requestReFetch global.settings :: cmds)
             , Just <|
                 PRItemUpdated
                     { readyToMerge = readyToMerge
@@ -451,7 +460,7 @@ viewItem global model pRItem =
             [ UI.paragraph [] [ Element.text pRItem.pr.name ]
             , viewStatusRow model pRItem
             ]
-        , viewMergeButton global model pRItem
+        , UI.el [] <| viewMergeButton global model pRItem
         ]
 
 
@@ -511,7 +520,11 @@ viewMergeButton global model prItem =
     in
     case state of
         NotReady ->
-            Element.none
+            UI.Input.checkBox []
+                { onChange = always <| AutoMergeClick prItem
+                , checked = False
+                , label = "Auto merge"
+                }
 
         ReadyToMerge lazyLoadableData ->
             case lazyLoadableData of
@@ -543,9 +556,12 @@ viewMergeButton global model prItem =
                                 Http.BadBody string ->
                                     Element.text <| "Bad body: " ++ string
 
-
-
---  TODO handle self approve
+        AutoMerge ->
+            UI.Input.checkBox []
+                { onChange = always <| CancelAutoMergeClick prItem
+                , checked = True
+                , label = "Auto merge"
+                }
 
 
 viewStatusRow : Model -> PRItem -> Element Msg
@@ -563,18 +579,23 @@ viewStatusRow model pRItem =
 
 type MergeButtonState
     = NotReady
+    | AutoMerge
     | ReadyToMerge (LazyLoadableData.LazyLoadableData Http.Error ())
 
 
 calculateMergeState : Global -> Model -> PRItem -> MergeButtonState
-calculateMergeState { settings } { mergeStatus } pRItem =
+calculateMergeState { settings } { mergeStatus, autoMerging } pRItem =
     let
         loadableState =
             Dict.get pRItem.pr.id mergeStatus
                 |> Maybe.withDefault LazyLoadableData.NotAsked
     in
     if not (isPRItemPassMergeRule settings.mergeRule pRItem) then
-        NotReady
+        if Set.member pRItem.pr.id autoMerging then
+            AutoMerge
+
+        else
+            NotReady
 
     else
         ReadyToMerge loadableState

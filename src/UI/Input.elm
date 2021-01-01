@@ -6,7 +6,7 @@ import Element.Border
 import Element.Font
 import Element.Input exposing (Placeholder)
 import Html.Attributes
-import UI
+import UI exposing (Attributes)
 import UI.Border
 import UI.Color
 import UI.Font
@@ -186,6 +186,31 @@ text attrs options =
             ]
         , errorBlock
         ]
+
+
+
+-- Check box
+
+
+checkBox : Attributes msg -> { onChange : Bool -> msg, checked : Bool, label : String } -> Element msg
+checkBox attributes { onChange, checked, label } =
+    Element.Input.checkbox
+        (List.concat attributes)
+        { onChange = onChange
+        , icon =
+            \isChecked ->
+                let
+                    icon =
+                        if isChecked then
+                            UI.Icons.checkboxChecked
+
+                        else
+                            UI.Icons.checkboxBlank
+                in
+                UI.Icons.icon 20 <| icon UI.Color.grey50
+        , checked = checked
+        , label = Element.Input.labelRight [ Element.Font.color UI.Color.grey50, Element.centerY ] (Element.text label)
+        }
 
 
 

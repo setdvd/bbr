@@ -1,7 +1,6 @@
 port module Main exposing (..)
 
 import Browser
-import Commit.Build
 import Credentials exposing (Credentials)
 import Element exposing (Element)
 import Element.Background
