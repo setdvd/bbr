@@ -14,7 +14,7 @@ import LazyLoadableData
 import List.Extra
 import Maybe.Extra
 import PR exposing (PR)
-import PR.DiffStat
+import PR.DiffStat exposing (PRDiffStat)
 import PR.Merge
 import PR.Participant exposing (Participant)
 import Process
@@ -36,7 +36,7 @@ type alias PRItem =
     { pr : PR
     , lastCommit : Commit
     , build : Build
-    , conflicts : Bool
+    , diffStat : PRDiffStat
     }
 
 
@@ -128,7 +128,7 @@ isReadyToMerge settings ( old, new ) =
 
 filterConflicts : List ( PRItem, PRItem ) -> ( List ( PRItem, PRItem ), List ( PRItem, PRItem ) )
 filterConflicts list =
-    List.partition (\( old, new ) -> not old.conflicts && new.conflicts) list
+    List.partition (\( old, new ) -> not old.diffStat.hasConflict && new.diffStat.hasConflict) list
 
 
 filterBuildFailed : List ( PRItem, PRItem ) -> ( List ( PRItem, PRItem ), List ( PRItem, PRItem ) )
@@ -393,7 +393,7 @@ isPRItemPassMergeRule mergeRule pRItem =
             else
                 True
     in
-    hasNeedApproves && hasBuilds && not pRItem.conflicts && tasks
+    hasNeedApproves && hasBuilds && not pRItem.diffStat.hasConflict && tasks
 
 
 statusIcon : Element msg -> Element msg
@@ -516,7 +516,7 @@ viewConflictStatusIcon : Model -> PRItem -> Element Msg
 viewConflictStatusIcon model prItem =
     let
         ( color, txt ) =
-            if prItem.conflicts then
+            if prItem.diffStat.hasConflict then
                 ( UI.Color.error, "pr has conflicts" )
 
             else
@@ -593,7 +593,20 @@ viewStatusRow model pRItem =
         [ viewBuildStateIcon model pRItem
         , viewApproveStateIcon model pRItem
         , viewConflictStatusIcon model pRItem
+        , viewComplexityIcon model pRItem
         ]
+
+
+viewComplexityIcon : Model -> PRItem -> Element Msg
+viewComplexityIcon _ pRItem =
+    if pRItem.diffStat.linesAdded < 100 then
+        UI.el [ UI.Font.caption, [ Element.Font.color UI.Color.success ] ] <| UI.text "S"
+
+    else if pRItem.diffStat.linesAdded < 400 then
+        UI.el [ UI.Font.caption, [ Element.Font.color UI.Color.warning ] ] <| UI.text "M"
+
+    else
+        UI.el [ UI.Font.caption, [ Element.Font.color UI.Color.error ] ] <| UI.text "XL: 400+ LOC"
 
 
 type MergeButtonState
