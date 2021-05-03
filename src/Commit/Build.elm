@@ -1,5 +1,5 @@
 module Commit.Build exposing
-    ( Build
+    ( Build(..)
     , Status(..)
     , fetch
     , isNewFailed

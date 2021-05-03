@@ -27,6 +27,7 @@ type alias PR =
     , mergeUrl : String
     , diffStatUrl : String
     , openTaskCount : Int
+    , htmlLink : String
     }
 
 
@@ -50,6 +51,7 @@ decodePR =
         |> requiredAt [ "links", "merge", "href" ] Json.Decode.string
         |> requiredAt [ "links", "diffstat", "href" ] Json.Decode.string
         |> requiredAt [ "task_count" ] Json.Decode.int
+        |> requiredAt [ "links", "html", "href" ] Json.Decode.string
 
 
 decodePRList : Json.Decode.Decoder (List PREssential)

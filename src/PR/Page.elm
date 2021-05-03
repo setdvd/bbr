@@ -404,8 +404,26 @@ statusIcon =
 viewBuildStateIcon : Model -> PRItem -> Element Msg
 viewBuildStateIcon model prItem =
     let
+        build : Build
         build =
             prItem.build
+
+        wrapper : Element msg -> Element msg
+        wrapper =
+            case build of
+                Commit.Build.Empty ->
+                    identity
+
+                Commit.Build.Started [ buildInfos ] ->
+                    let
+                        wrapperInternal : Element msg -> Element msg
+                        wrapperInternal c =
+                            Element.newTabLink [] { url = buildInfos.buildURL, label = c }
+                    in
+                    wrapperInternal
+
+                Commit.Build.Started _ ->
+                    identity
 
         color =
             case Commit.Build.transverse build of
@@ -424,12 +442,13 @@ viewBuildStateIcon model prItem =
         icon =
             UI.Icons.tools color
     in
-    viewStatusIcon model
-        prItem
-        { status = BuildStatus
-        , icon = icon
-        , tooltipText = "build " ++ Commit.Build.statusToString build
-        }
+    wrapper <|
+        viewStatusIcon model
+            prItem
+            { status = BuildStatus
+            , icon = icon
+            , tooltipText = "build " ++ Commit.Build.statusToString build
+            }
 
 
 viewApproveStateIcon : Model -> PRItem -> Element Msg
@@ -457,7 +476,7 @@ viewItem global model pRItem =
               , Element.spacing 8
               ]
             ]
-            [ UI.paragraph [] [ Element.text pRItem.pr.name ]
+            [ UI.paragraph [] [ Element.newTabLink [ Element.Font.underline ] { url = pRItem.pr.htmlLink, label = Element.text pRItem.pr.name } ]
             , viewStatusRow model pRItem
             ]
         , UI.el [] <| viewMergeButton global model pRItem

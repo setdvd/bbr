@@ -2,6 +2,7 @@ import './main.css';
 import {Elm} from './Main.elm';
 import * as serviceWorker from './serviceWorker';
 
+
 const urlParams = new URLSearchParams(window.location.search);
 const version = urlParams.get('v');
 
