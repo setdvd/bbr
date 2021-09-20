@@ -32,6 +32,7 @@ function createWindow() {
 
     if (app.isPackaged) {
         autoUpdater.checkForUpdatesAndNotify();
+        // @ts-ignore
         mainWindow.loadURL(path.join('file://', process.resourcesPath, `/build/index.html?v=${version}`));
     } else {
         mainWindow.webContents.openDevTools();
@@ -46,7 +47,6 @@ function createWindow() {
         mainWindow = null
     })
     mainWindow.webContents.on('new-window', function(event, url){
-        console.log('ffff', url)
         event.preventDefault();
         electron.shell.openExternal(url)
     });

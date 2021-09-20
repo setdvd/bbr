@@ -192,4 +192,3 @@ dist
 elm-stuff
 # elm-repl generated files
 repl-temp-*
-/build/
