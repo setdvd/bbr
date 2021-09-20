@@ -450,8 +450,8 @@ export const notEmpty = <T, E = { type: "value_is_empty"; value: unknown }>(
   value: T,
   error?: E
 ): Result<E, NotFalsy<T>> => {
-  if (value) {
-    success(value);
+  if (!!value) {
+    return success(value as any);
   }
   return failure(error ?? ({ type: "value_is_empty", value } as any));
 };

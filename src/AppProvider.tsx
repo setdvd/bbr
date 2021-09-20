@@ -1,4 +1,4 @@
-import { ThemeProvider, UnifiedTheme, Button } from "@revolut/ui-kit";
+import { ThemeProvider, UnifiedTheme } from "@revolut/ui-kit";
 import { App } from "./App";
 
 export const AppProvider = () => {

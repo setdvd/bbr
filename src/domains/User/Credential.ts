@@ -26,8 +26,19 @@ export type CredentialValidationError = {
 export const validateCredential = (
   form: Partial<Credential>
 ): Result<CredentialValidationError, Credential> => {
+  console.log("valiation", form);
   return object({
-    username: notEmpty(form.password),
+    username: notEmpty(form.username),
     password: notEmpty(form.password),
   });
+};
+
+export const getHTTPAuthHeader: (credentials: Credential) => {
+  Authorization: string;
+} = (credentials: Credential) => {
+  return {
+    Authorization: `Basic ${btoa(
+      `${credentials.username}:${credentials.password}`
+    )}`,
+  };
 };

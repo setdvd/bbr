@@ -27,6 +27,8 @@ export const Layout = ({ onMsg, isLoading }: Props) => {
     ? User.validateCredential(state).getFailureReason()
     : undefined;
 
+  console.log(error, state);
+
   const onSubmit = () => {
     setIsFormSubmitted(true);
     User.validateCredential(state).map((credentials) => {
@@ -57,7 +59,7 @@ export const Layout = ({ onMsg, isLoading }: Props) => {
         <Input
           variant={"grey"}
           label={"app password"}
-          value={state.username}
+          value={state.password}
           hasError={!!error?.password}
           message={<PasswordMessage error={error} />}
           onChange={(e) => {
