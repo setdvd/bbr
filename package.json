@@ -1,7 +1,7 @@
 {
   "name": "bbr",
   "description": "UI for Bitbucket.com",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "scripts": {
     "start": "yarn start:web & yarn start:app",
     "start:app": "wait-on tcp:3000 && electron .",
@@ -53,8 +53,9 @@
       }
     },
     "rules": {
-      "@typescript-eslint/no-unused-vars": ["error"],
-
+      "@typescript-eslint/no-unused-vars": [
+        "error"
+      ],
       "react-hooks/exhaustive-deps": [
         "error"
       ],
