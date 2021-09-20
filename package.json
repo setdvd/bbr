@@ -6,9 +6,11 @@
     "start": "yarn start:web & yarn start:app",
     "start:app": "wait-on tcp:3000 && electron .",
     "start:web": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "PUBLIC_URL=./ react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "postinstall": "electron-builder install-app-deps",
+    "dist": "electron-builder --mac"
   },
   "main": "main.js",
   "dependencies": {
@@ -22,9 +24,6 @@
     "@types/react": "^17.0.0",
     "@types/react-dom": "^17.0.0",
     "axios": "^0.21.4",
-    "electron": "^14.0.0",
-    "electron-builder": "^22.11.7",
-    "electron-builder-notarize": "^1.2.0",
     "electron-log": "^4.4.1",
     "electron-updater": "^4.3.9",
     "eslint-config-prettier": "^8.3.0",
@@ -87,6 +86,7 @@
     ]
   },
   "build": {
+    "extends": null,
     "appId": "com.github.setdvd.bbr",
     "productName": "BBR",
     "afterSign": "electron-builder-notarize",
@@ -120,6 +120,9 @@
   },
   "devDependencies": {
     "@types/styled-components": "^5.1.14",
+    "electron-builder": "^22.11.7",
+    "electron-builder-notarize": "^1.2.0",
+    "electron": "^14.0.0",
     "prettier": "2.3.2"
   }
 }

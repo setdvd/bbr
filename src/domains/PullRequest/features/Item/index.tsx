@@ -8,7 +8,7 @@ import {
 import { Item as PRItem } from "src/domains/PullRequest/components";
 import {
   useLazyLoadableDataWithParams,
-  useLoadableDataWithParams,
+  usePollableDataWithParams,
 } from "src/toolkit/LoadableData";
 import { DiffStat } from "src/domains/DiffStat";
 import { fetchDiffStats } from "src/domains/DiffStat/api";
@@ -86,8 +86,16 @@ const calculateState = ({
 }: Omit<Data, "notificationState"> & {
   settings: Settings;
 }): NotificationState => {
-  if (pullRequest.state === "MERGED") {
-    return "merged";
+  switch (pullRequest.state) {
+    case "MERGED":
+      return "merged";
+    case "SUPERSEDED":
+    case "OPEN":
+    case "DECLINED":
+      break;
+    /* istanbul ignore next */
+    default:
+      return notReachable(pullRequest.state);
   }
 
   const hasConflict = !!diffStats.find((diff) => {
@@ -178,10 +186,14 @@ const calculateState = ({
 };
 
 export const Item = ({ pullRequest, credentials, settings }: Props) => {
-  const [state, setState] = useLoadableDataWithParams(fetch, {
-    type: "loading",
-    params: { pullRequestItem: pullRequest, credentials, settings },
-  });
+  const [state, setState] = usePollableDataWithParams(
+    fetch,
+    {
+      type: "loading",
+      params: { pullRequestItem: pullRequest, credentials, settings },
+    },
+    settings.pollIntervalMinutes * 1000 * 60
+  );
 
   useEffect(() => {
     if (state.params.pullRequestItem.id !== pullRequest.id) {
@@ -202,6 +214,8 @@ export const Item = ({ pullRequest, credentials, settings }: Props) => {
     case "error": // FIXME:
     case "loading":
       return <PRItem pullRequest={pullRequest} />;
+    case "reloading":
+    case "subsequent_failed":
     case "loaded":
       return (
         <LoadedItem
@@ -210,6 +224,26 @@ export const Item = ({ pullRequest, credentials, settings }: Props) => {
           pullRequest={pullRequest}
           credentials={credentials}
           settings={settings}
+          onMsg={(msg) => {
+            switch (msg) {
+              case "merged":
+                setState({
+                  type: "loaded",
+                  params: state.params,
+                  data: {
+                    ...state.data,
+                    pullRequest: {
+                      ...state.data.pullRequest,
+                      state: "MERGED",
+                    },
+                  },
+                });
+                break;
+              /* istanbul ignore next */
+              default:
+                return notReachable(msg);
+            }
+          }}
         />
       );
 
@@ -225,7 +259,12 @@ const LoadedItem = ({
   pullRequest,
   settings,
   credentials,
-}: { notificationState: NotificationState; data: Data } & Props) => {
+  onMsg,
+}: {
+  notificationState: NotificationState;
+  data: Data;
+  onMsg: (msg: "merged") => void;
+} & Props) => {
   useEffect(() => {
     switch (notificationState) {
       case "conflict":
@@ -293,6 +332,7 @@ const LoadedItem = ({
             notificationState={notificationState}
             pullRequest={data.pullRequest}
             credentials={credentials}
+            onMsg={onMsg}
           />
         </Box>
       </UIItem.Side>
@@ -304,16 +344,22 @@ const Merge = ({
   notificationState,
   pullRequest,
   credentials,
+  onMsg,
 }: {
   notificationState: NotificationState;
   pullRequest: PullRequest;
   credentials: Credential;
+  onMsg: (msg: "merged") => void;
 }) => {
   const [isAutoMerge, setIsAutoMerge] = useState<boolean>(false);
 
   const [state, setState] = useLazyLoadableDataWithParams(merge);
 
   useEffect(() => {
+    if (!isAutoMerge) {
+      return;
+    }
+
     switch (notificationState) {
       case "conflict":
       case "changes_requested":
@@ -393,7 +439,7 @@ const Merge = ({
               variant="success"
               isOpen
               onExit={() => {
-                // FIXME:
+                onMsg("merged");
               }}
             >
               <StatusPopup.Title>Merged</StatusPopup.Title>

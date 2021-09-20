@@ -27,6 +27,7 @@ export type PullRequestItem = {
 
 export type PullRequest = {
   id: string;
+  title: string;
   participants: Participant[];
   author: { account_id: string };
   state: "MERGED" | "SUPERSEDED" | "OPEN" | "DECLINED";

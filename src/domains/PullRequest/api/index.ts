@@ -44,7 +44,14 @@ export const merge = ({
   pullRequest: PullRequest;
   credentials: Credential;
 }) => {
-  return post(pullRequest.links.merge.href, undefined, {
-    headers: getHTTPAuthHeader(credentials),
-  });
+  return post(
+    pullRequest.links.merge.href,
+    {
+      message: `Merged in ${pullRequest.title} (pull request #${pullRequest.id})`,
+      merge_strategy: "merge_commit",
+    },
+    {
+      headers: getHTTPAuthHeader(credentials),
+    }
+  );
 };
