@@ -85,6 +85,7 @@ jobs:
         env:
           API_KEY_ID: ${{ secrets.api_key_id }}
           API_KEY_ISSUER_ID: ${{ secrets.api_key_issuer_id }}
+          CI: false
 
   release-draft:
     runs-on: ubuntu-latest
