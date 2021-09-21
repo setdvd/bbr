@@ -106,6 +106,7 @@ const calculateState = ({
       case "removed":
       case "modified":
       case "renamed":
+      case "local deleted":
         return false;
       /* istanbul ignore next */
       default:
