@@ -13,6 +13,7 @@ export const MergeConflictStatus = ({ diffStats }: Props) => {
     switch (diff.status) {
       case "merge conflict":
         return true;
+      case "local deleted":
       case "added":
       case "removed":
       case "modified":
