@@ -330,6 +330,7 @@ const LoadedItem = ({
       <UIItem.Side>
         <Box>
           <Merge
+            settings={settings}
             notificationState={notificationState}
             pullRequest={data.pullRequest}
             credentials={credentials}
@@ -345,11 +346,13 @@ const Merge = ({
   notificationState,
   pullRequest,
   credentials,
+  settings,
   onMsg,
 }: {
   notificationState: NotificationState;
   pullRequest: PullRequest;
   credentials: Credential;
+  settings: Settings;
   onMsg: (msg: "merged") => void;
 }) => {
   const [isAutoMerge, setIsAutoMerge] = useState<boolean>(false);
@@ -372,7 +375,14 @@ const Merge = ({
         setState((currentState) => {
           switch (currentState.type) {
             case "not_asked":
-              return { type: "loading", params: { pullRequest, credentials } };
+              return {
+                type: "loading",
+                params: {
+                  pullRequest,
+                  credentials,
+                  mergeStrategy: settings.mergeStrategy,
+                },
+              };
             case "loading":
             case "loaded":
             case "error":
@@ -387,7 +397,14 @@ const Merge = ({
       default:
         return notReachable(notificationState);
     }
-  }, [credentials, isAutoMerge, notificationState, pullRequest, setState]);
+  }, [
+    credentials,
+    isAutoMerge,
+    notificationState,
+    pullRequest,
+    settings,
+    setState,
+  ]);
 
   switch (notificationState) {
     case "conflict":
@@ -425,6 +442,7 @@ const Merge = ({
                   params: {
                     pullRequest,
                     credentials,
+                    mergeStrategy: settings.mergeStrategy,
                   },
                 })
               }
@@ -466,6 +484,7 @@ const Merge = ({
                       params: {
                         pullRequest,
                         credentials,
+                        mergeStrategy: settings.mergeStrategy,
                       },
                     });
                   }}
