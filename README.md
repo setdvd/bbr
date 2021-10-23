@@ -12,6 +12,10 @@ New ui for Bitbucket to increase day to day developer productivity during PR cre
 
 # Getting started
 
+Mac: download latest release as .dmg file, install and you ready to go 🚀
+
+# Setting up local development version
+
 Requirements: `nvm` (preferred) or node 16 with `yarn` installed
 
 Run `yarn start:web` to start in browser
