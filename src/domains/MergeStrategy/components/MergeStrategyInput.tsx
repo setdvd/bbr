@@ -1,16 +1,16 @@
-import { Cell, Group, Header, Input, Popup } from "@revolut/ui-kit"
+import { Cell, Group, Header, Input, Popup } from "@revolut/ui-kit";
 
-import { MergeStrategy } from "../MergeStrategy"
-import { getLabel, getAllMergeStrategies } from "../helpers"
-import { useState } from "react"
+import { MergeStrategy } from "../MergeStrategy";
+import { getLabel, getAllMergeStrategies } from "../helpers";
+import { useState } from "react";
 
 type Props = {
-  value: MergeStrategy
-  onChange: (value: MergeStrategy) => void
-}
+  value: MergeStrategy;
+  onChange: (value: MergeStrategy) => void;
+};
 
 export const MergeStrategyInput = ({ value, onChange }: Props) => {
-  const [state, setState] = useState<ModalState>("closed")
+  const [state, setState] = useState<ModalState>("closed");
 
   return (
     <>
@@ -26,41 +26,32 @@ export const MergeStrategyInput = ({ value, onChange }: Props) => {
         value={value}
         state={state}
         onSelect={onChange}
-        onCloseRequest={() => setState("closing")}
-        onClosed={() => setState("closed")}
+        onClose={() => setState("closed")}
       />
     </>
-  )
-}
+  );
+};
 
-type ModalState = "opened" | "closing" | "closed"
+type ModalState = "opened" | "closed";
 
 const Modal = ({
   state,
   value,
   onSelect,
-  onCloseRequest,
-  onClosed,
+  onClose,
 }: {
-  state: ModalState
-  value: MergeStrategy
-  onSelect: (value: MergeStrategy) => void
-  onCloseRequest: () => void
-  onClosed: () => void
+  state: ModalState;
+  value: MergeStrategy;
+  onSelect: (value: MergeStrategy) => void;
+  onClose: () => void;
 }) => {
   switch (state) {
     case "closed":
-      return null
+      return <Popup variant="bottom-sheet" isOpen={false} />;
 
-    case "closing":
     case "opened":
       return (
-        <Popup
-          variant="bottom-sheet"
-          isOpen={state === "opened"}
-          onExited={onClosed}
-          onExit={onCloseRequest}
-        >
+        <Popup variant="bottom-sheet" isOpen onExit={onClose}>
           <Header variant="bottom-sheet">
             <Header.Title>Select default merge strategy</Header.Title>
           </Header>
@@ -72,16 +63,13 @@ const Modal = ({
                 use="button"
                 variant="choice"
                 aria-pressed={value === strategy}
-                onClick={() => {
-                  onSelect(strategy)
-                  onCloseRequest()
-                }}
+                onClick={() => onSelect(strategy)}
               >
                 {getLabel(strategy)}
               </Cell>
             ))}
           </Group>
         </Popup>
-      )
+      );
   }
-}
+};
