@@ -13,5 +13,7 @@ New ui for Bitbucket to increase day to day developer productivity during PR cre
 # Getting started
 
 Requirements: `nvm` (preferred) or node 16 with `yarn` installed
+
 Run `yarn start:web` to start in browser
+
 Run `yarn start:app` to start in app
