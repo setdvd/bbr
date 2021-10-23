@@ -1,7 +1,7 @@
 {
   "name": "bbr",
   "description": "UI for Bitbucket.com",
-  "version": "0.3.5",
+  "version": "0.4.0",
   "scripts": {
     "start": "yarn start:web & yarn start:app",
     "start:app": "wait-on tcp:3000 && electron .",
