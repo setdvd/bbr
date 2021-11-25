@@ -56,3 +56,30 @@ export const merge = ({
     }
   );
 };
+
+export const fetchList = ({
+  repoSlug,
+  workspace,
+  pageSize,
+  credentials,
+  params,
+}: {
+  pageSize: number;
+  workspace: string;
+  repoSlug: string;
+  params: {
+    state?: "MERGED" | "SUPERSEDED" | "OPEN" | "DECLINED";
+    "reviewers.uuid": string;
+  };
+  credentials: Credential;
+}): Promise<{ values: PullRequestItem[] }> =>
+  get(`repositories/${workspace}/${repoSlug}/pullrequests`, {
+    params: {
+      pagelen: pageSize,
+      fields: "-values.source,-values.destination,-values.summary",
+      q: Object.entries(params)
+        .map(([key, value]) => `${key}="${value}"`)
+        .join(" AND "),
+    },
+    headers: getHTTPAuthHeader(credentials),
+  });

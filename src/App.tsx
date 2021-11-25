@@ -1,10 +1,19 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import * as User from "src/domains/User";
 import { notReachable } from "src/toolkit/notReachable";
 import { SignIn } from "src/domains/User/features/SignIn";
 import { PullRequestItem } from "src/domains/PullRequest";
+import {
+  markAsChecked,
+  markAsIgnored,
+  markAsUnchecked,
+} from "src/domains/PullRequestTagsHash";
+import {
+  Persistance,
+  loadPersistance,
+  savePersistance,
+} from "src/domains/Persistance";
 import { MyPRs } from "src/domains/PullRequest/features/MyPRs";
-import { getSettings, saveSettings, Settings } from "src/domains/Settings";
 
 type State =
   | {
@@ -15,13 +24,13 @@ type State =
   | { type: "sign_in" };
 
 export const App = () => {
-  const [settingsState, setSettingsState] = useState<Settings>(() =>
-    getSettings()
+  const [persistanceState, setPersistanceState] = useState<Persistance>(() =>
+    loadPersistance()
   );
 
   useEffect(() => {
-    saveSettings(settingsState);
-  }, [settingsState]);
+    savePersistance(persistanceState);
+  }, [persistanceState]);
 
   const [state, setState] = useState<State>(() => {
     const credentials = User.getCredentials();
@@ -70,14 +79,49 @@ export const App = () => {
           onMsg={(msg) => {
             switch (msg.type) {
               case "settings_change":
-                setSettingsState(msg.settings);
+                setPersistanceState((current) => ({
+                  ...current,
+                  settings: msg.settings,
+                }));
                 break;
+
+              case "mark_pr_as_checked_clicked":
+                setPersistanceState((persistance) => ({
+                  ...persistance,
+                  pullRequestTagsHash: markAsChecked(
+                    persistance.pullRequestTagsHash,
+                    msg.pr
+                  ),
+                }));
+                break;
+
+              case "mark_pr_as_unchecked_clicked":
+                setPersistanceState((persistance) => ({
+                  ...persistance,
+                  pullRequestTagsHash: markAsUnchecked(
+                    persistance.pullRequestTagsHash,
+                    msg.pr
+                  ),
+                }));
+                break;
+
+              case "mark_pr_as_ignored_clicked":
+                setPersistanceState((persistance) => ({
+                  ...persistance,
+                  pullRequestTagsHash: markAsIgnored(
+                    persistance.pullRequestTagsHash,
+                    msg.pr
+                  ),
+                }));
+                break;
+
               /* istanbul ignore next */
               default:
-                return notReachable(msg.type);
+                return notReachable(msg);
             }
           }}
-          settings={settingsState}
+          pullRequestTagsHash={persistanceState.pullRequestTagsHash}
+          settings={persistanceState.settings}
           initialPullRequests={state.pullRequests}
           credentials={state.credentials}
         />

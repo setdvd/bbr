@@ -37,8 +37,6 @@ export const usePollableDataWithParams = <T, P, E = Error>(
 ] => {
   const [state, setState] = useReloadableDataWithParams(fetch, initState);
 
-  console.log(intervalMs, state, initState);
-
   useEffect(() => {
     const timeout = (cb: () => void) => {
       const id = setTimeout(cb, intervalMs);

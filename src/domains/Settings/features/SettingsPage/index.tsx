@@ -87,6 +87,51 @@ export const SettingsPage = ({ settings, onMsg }: Props) => {
             }}
           />
 
+          <Input
+            variant="grey"
+            label="Current user UUID (used for review PRs)"
+            value={settings.reviewByUserUUID}
+            onChange={(e) => {
+              onMsg({
+                type: "settings_change",
+                settings: {
+                  ...settings,
+                  reviewByUserUUID: e.currentTarget.value,
+                },
+              });
+            }}
+          />
+
+          <Input
+            variant="grey"
+            label="Review workspace"
+            value={settings.reviewInWorkspace}
+            onChange={(e) => {
+              onMsg({
+                type: "settings_change",
+                settings: {
+                  ...settings,
+                  reviewInWorkspace: e.currentTarget.value,
+                },
+              });
+            }}
+          />
+
+          <Input
+            variant="grey"
+            label="Review repo"
+            value={settings.reviewInRepo}
+            onChange={(e) => {
+              onMsg({
+                type: "settings_change",
+                settings: {
+                  ...settings,
+                  reviewInRepo: e.currentTarget.value,
+                },
+              });
+            }}
+          />
+
           <MergeStrategyInput
             value={settings.mergeStrategy}
             onChange={(mergeStrategy) =>
