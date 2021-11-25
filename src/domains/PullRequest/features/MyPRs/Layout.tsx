@@ -10,7 +10,7 @@ import {
   ItemSkeleton,
   Layout as UILayout,
 } from "@revolut/ui-kit";
-import { Gear } from "@revolut/icons";
+import { Gear, ArrowBulkRequest } from "@revolut/icons";
 import { Item } from "../Item/";
 import { notReachable } from "src/toolkit/notReachable";
 import React from "react";
@@ -22,7 +22,7 @@ type Props = {
   onMsg: (msg: Msg) => void;
 };
 
-type Msg = { type: "settings_button_click" };
+type Msg = { type: "settings_button_click" } | { type: "my_prs_button_click" };
 
 // TODO: how to handle api errors here?
 
@@ -72,6 +72,14 @@ export const Layout = ({
                     onMsg({ type: "settings_button_click" });
                   }}
                   useIcon={Gear}
+                />
+                <Button
+                  variant="bar"
+                  aria-label="Review PRs"
+                  onClick={() => {
+                    onMsg({ type: "my_prs_button_click" });
+                  }}
+                  useIcon={ArrowBulkRequest}
                 />
               </Header.Actions>
             </Header>

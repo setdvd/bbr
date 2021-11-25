@@ -19,10 +19,10 @@ type Links = {
 
 export type PullRequestItem = {
   id: string;
-
   title: string;
-
   links: Links;
+  updated_on: string;
+  author: { display_name: string };
 };
 
 export type PullRequest = {
