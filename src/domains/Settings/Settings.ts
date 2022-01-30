@@ -1,3 +1,5 @@
+import { MergeStrategy } from "src/domains/MergeStrategy";
+
 export type Settings = {
   numberOfApproves: number;
   numberOfBuilds: number;
@@ -5,8 +7,6 @@ export type Settings = {
   pollIntervalMinutes: number;
   mergeStrategy: MergeStrategy;
 };
-
-export type MergeStrategy = "merge" | "squash" | "fast_forward";
 
 export const defaultSettings: Settings = {
   numberOfApproves: 1,

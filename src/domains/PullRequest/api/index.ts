@@ -2,6 +2,7 @@ import * as User from "src/domains/User";
 import { get, post } from "src/toolkit/requests";
 import { Credential, getHTTPAuthHeader } from "src/domains/User";
 import { PullRequest, PullRequestItem } from "../PullRequest";
+import { MergeStrategy } from "src/domains/MergeStrategy";
 
 type Params = {
   credentials: User.Credential;
@@ -12,9 +13,7 @@ export const fetchCurrentUserPullRequests = ({
 }: Params): Promise<PullRequestItem[]> => {
   return get<any>(`/pullrequests/${credentials.username}`, {
     headers: getHTTPAuthHeader(credentials),
-  }).then((prs) => {
-    return prs.values;
-  });
+  }).then((prs) => prs.values);
 };
 
 export const fetchFullPullRequest = ({
@@ -40,15 +39,17 @@ export const fetchFullPullRequest = ({
 export const merge = ({
   pullRequest,
   credentials,
+  mergeStrategy,
 }: {
   pullRequest: PullRequest;
   credentials: Credential;
+  mergeStrategy: MergeStrategy;
 }) => {
   return post(
     pullRequest.links.merge.href,
     {
       message: `Merged in ${pullRequest.title} (pull request #${pullRequest.id})`,
-      merge_strategy: "merge_commit",
+      merge_strategy: mergeStrategy,
     },
     {
       headers: getHTTPAuthHeader(credentials),

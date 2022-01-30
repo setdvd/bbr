@@ -1,8 +1,16 @@
-import React from "react";
 import { Settings } from "../../Settings";
-import { Header, Layout, Subheader, Input, Item } from "@revolut/ui-kit";
+import {
+  Header,
+  Layout,
+  Subheader,
+  Input,
+  Item,
+  InputGroup,
+} from "@revolut/ui-kit";
 import { LogoutDoor } from "@revolut/icons";
 import { Column } from "src/uikit/Column";
+
+import { MergeStrategyInput } from "src/domains/MergeStrategy/components";
 
 type Props = {
   settings: Settings;
@@ -20,20 +28,20 @@ export const SettingsPage = ({ settings, onMsg }: Props) => {
         <Header variant="form">
           <Header.BackButton
             aria-label={"back"}
-            onClick={() => {
-              onMsg({ type: "close" });
-            }}
+            onClick={() => onMsg({ type: "close" })}
           />
 
           <Header.Title>Settings</Header.Title>
         </Header>
+
         <Subheader>
           <Subheader.Title>Merge rules</Subheader.Title>
         </Subheader>
-        <Column space={"s-16"}>
+
+        <InputGroup>
           <Input
             variant={"grey"}
-            label={"number of builds to pass"}
+            label="Number of builds to pass"
             type={"number"}
             value={settings.numberOfBuilds}
             onChange={(e) => {
@@ -49,7 +57,7 @@ export const SettingsPage = ({ settings, onMsg }: Props) => {
 
           <Input
             variant={"grey"}
-            label={"number of approves"}
+            label="Number of approves"
             type={"number"}
             value={settings.numberOfApproves}
             onChange={(e) => {
@@ -65,7 +73,7 @@ export const SettingsPage = ({ settings, onMsg }: Props) => {
 
           <Input
             variant={"grey"}
-            label={"poll interval in mins"}
+            label="Poll interval (minutes)"
             type={"number"}
             value={settings.pollIntervalMinutes}
             onChange={(e) => {
@@ -78,7 +86,20 @@ export const SettingsPage = ({ settings, onMsg }: Props) => {
               });
             }}
           />
-        </Column>
+
+          <MergeStrategyInput
+            value={settings.mergeStrategy}
+            onChange={(mergeStrategy) =>
+              onMsg({
+                type: "settings_change",
+                settings: {
+                  ...settings,
+                  mergeStrategy,
+                },
+              })
+            }
+          />
+        </InputGroup>
         <Subheader>
           <Subheader.Title>Actions</Subheader.Title>
         </Subheader>
