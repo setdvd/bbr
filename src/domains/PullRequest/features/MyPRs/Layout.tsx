@@ -9,6 +9,10 @@ import {
   Header,
   ItemSkeleton,
   Layout as UILayout,
+  Subheader,
+  TextButton,
+  Text,
+  Hint,
 } from "@revolut/ui-kit";
 import { Gear } from "@revolut/icons";
 import { Item } from "../Item/";
@@ -32,7 +36,7 @@ export const Layout = ({
   settings,
   onMsg,
 }: Props) => {
-  const [state] = usePollableDataWithParams(
+  const [state, setState] = usePollableDataWithParams(
     fetchCurrentUserPullRequests,
     initialPullRequests
       ? { type: "loaded", params: { credentials }, data: initialPullRequests }
@@ -49,6 +53,16 @@ export const Layout = ({
             <Header variant="main">
               <Header.Title>Overview</Header.Title>
             </Header>
+            <Subheader>
+              {(() => {
+                switch (state.type) {
+                  case "loading":
+                    return <Text>loading</Text>;
+                  case "error":
+                    return <Text color={"error"}>{state.error.message}</Text>;
+                }
+              })()}
+            </Subheader>
             <Group>
               <ItemSkeleton />
               <ItemSkeleton />
@@ -75,6 +89,52 @@ export const Layout = ({
                 />
               </Header.Actions>
             </Header>
+            <Subheader>
+              <Subheader.Side>
+                {(() => {
+                  switch (state.type) {
+                    case "loaded":
+                      return (
+                        <TextButton
+                          onClick={() =>
+                            setState({
+                              type: "reloading",
+                              params: state.params,
+                              data: state.data,
+                            })
+                          }
+                        >
+                          reload
+                        </TextButton>
+                      );
+                    case "reloading":
+                      return <Text>reloading...</Text>;
+                    case "subsequent_failed":
+                      return (
+                        <Hint message={state.error.message} placement="bottom">
+                          <TextButton
+                            color={"error"}
+                            onClick={() =>
+                              setState({
+                                type: "reloading",
+                                params: state.params,
+                                data: state.data,
+                              })
+                            }
+                          >
+                            reload
+                          </TextButton>
+                        </Hint>
+                      );
+
+                    /* istanbul ignore next */
+                    default:
+                      return notReachable(state);
+                  }
+                })()}
+              </Subheader.Side>
+            </Subheader>
+
             <Group>
               {state.data.map((pr) => {
                 return (
